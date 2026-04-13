@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: #060d1f;
+    color: #f0f4ff;
+  }
+}
+
+/* ── Keyframes panneaux flottants ── */
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes float-in {
+  from { transform: translateY(16px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* ── Keyframes illustrations pédagogiques ── */
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes cell-pulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.6; }
+}
+@keyframes fade-row {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+@keyframes scale-in {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+@layer utilities {
+  .animate-slide-up    { animation: slide-up    0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
+  .animate-float-in    { animation: float-in    0.25s cubic-bezier(0.32, 0.72, 0, 1) both; }
+  .animate-arrow-bounce{ animation: arrow-bounce 1.2s ease-in-out infinite; }
+  .animate-cell-pulse  { animation: cell-pulse   1.5s ease-in-out infinite; }
+  .animate-fade-row    { animation: fade-row     0.4s ease-out both; }
+  .animate-scale-in    { animation: scale-in     0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+  }
+
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.3), 0 0 80px rgba(99, 102, 241, 0.15);
+  }
+
+  .glow-blue-sm {
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #60a5fa, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-mesh {
+    background-image:
+      radial-gradient(at 15% 25%, rgba(59, 130, 246, 0.18) 0px, transparent 55%),
+      radial-gradient(at 85% 75%, rgba(139, 92, 246, 0.14) 0px, transparent 55%),
+      radial-gradient(at 50% 10%, rgba(99, 102, 241, 0.10) 0px, transparent 60%);
+  }
+}
