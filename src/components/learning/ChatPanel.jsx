@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { HiOutlinePaperAirplane, HiOutlineLightningBolt, HiOutlineX } from 'react-icons/hi'
-import { QUICK_QUESTIONS } from '../../data/lessons/chatbot-arrays'
 import { useChatBot } from '../../hooks/useChatBot'
 import CodeBlock from './CodeBlock'
 
@@ -113,7 +112,7 @@ function TypingIndicator() {
 
 /* ─── Panel principal ─── */
 export default function ChatPanel({ onClose }) {
-  const { messages, input, setInput, typing, sendMessage, sendQuickQuestion } = useChatBot()
+  const { messages, input, setInput, typing, sendMessage } = useChatBot()
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
 
@@ -166,27 +165,6 @@ export default function ChatPanel({ onClose }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Questions rapides */}
-      <div className="px-4 py-3 border-t border-white/6 shrink-0">
-        <p className="text-[10px] font-semibold text-white/25 uppercase tracking-wider mb-2">
-          Questions fréquentes
-        </p>
-        <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
-          {QUICK_QUESTIONS.map((q) => (
-            <button
-              key={q}
-              onClick={() => sendQuickQuestion(q)}
-              disabled={typing}
-              className="px-2.5 py-1 rounded-full text-[11px] glass
-                text-blue-300/70 border-blue-500/20
-                hover:bg-blue-500/10 hover:text-blue-300
-                transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Input */}
       <div className="px-4 pb-4 shrink-0">

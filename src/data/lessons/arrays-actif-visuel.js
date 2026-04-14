@@ -115,6 +115,63 @@ int main() {
 
     return 0;
 }`,
+        errorPatterns: [
+          {
+            id: 'eq1-wrong-equals-syntax',
+            detect: (c) => /int\s+points\s*=\s*\[/i.test(c),
+            title: 'Syntaxe incorrecte — "=" avant les crochets',
+            message: `Tu as écrit int points = [5] mais la taille se colle directement après le nom, sans "=" entre les deux.\n\nLe "=" sert à initialiser les valeurs, pas à définir la structure.\nCorrection : int points[5]`,
+            followUp: {
+              question: `Comment déclare-t-on un tableau de 3 entiers nommé "tab" sans valeurs initiales ?`,
+              hint: `Structure : type nom[taille]; — les crochets se collent au nom, sans "=".`,
+            },
+            analogy: `En français on dit "une boîte à 5 compartiments" — pas "une boîte = 5 compartiments". En C c'est pareil : int tab[5] pas int tab = [5]. Les crochets se collent directement au nom du tableau.`,
+          },
+          {
+            id: 'eq1-missing-brackets',
+            detect: (c) => /int\s+points(?!\s*\[)/i.test(c),
+            title: 'Déclaration incorrecte — il manque les crochets []',
+            message: `Tu as déclaré "int points" comme une variable simple. Un tableau nécessite des crochets avec sa taille pour réserver plusieurs cases.\n\nCorrection : int points[5] — les [5] signifient "réserve 5 cases entières en mémoire".`,
+            followUp: {
+              question: `Modifie ton code pour déclarer un tableau de 3 entiers. Combien de valeurs peut-on stocker dans tab[8] ?`,
+              hint: `int tab[3]; — le chiffre entre crochets = le nombre de cases. tab[8] peut stocker 8 valeurs, aux indices [0] à [7].`,
+            },
+            analogy: `Imagine un vestiaire. "int tab" c'est un seul casier. "int tab[5]" c'est une rangée de 5 casiers numérotés de [0] à [4]. Les crochets définissent le nombre de casiers côte à côte.`,
+          },
+          {
+            id: 'eq1-wrong-size',
+            detect: (c) => { const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/i); return m !== null && m[1] !== '5' },
+            title: 'Mauvaise taille — confusion taille / dernier indice',
+            message: `Tu as utilisé les crochets, mais avec la mauvaise taille. Le schéma montre 5 cases ([0] à [4]), donc la taille doit être 5.\n\nRappel : taille = nombre de cases, pas le numéro du dernier indice. Pour 5 cases → int points[5].`,
+            followUp: {
+              question: `Déclare un tableau de 3 éléments nommé "tab". Quel est le dernier indice valide ?`,
+              hint: `int tab[3]; — indices valides : [0], [1], [2]. Dernier indice = taille - 1 = 2.`,
+            },
+            analogy: `La taille d'un tableau, c'est le nombre de pages d'un cahier. Un cahier de 5 pages : pages numérotées [0] à [4] en C. Commander un cahier de 4 pages pour noter 5 choses — la 5ème n'a nulle part où aller.`,
+          },
+          {
+            id: 'eq1-out-of-bounds',
+            detect: (c) => {
+              const re = /points\s*\[\s*(\d+)\s*\]/gi
+              let m
+              while ((m = re.exec(c)) !== null) {
+                if (parseInt(m[1]) >= 5) {
+                  const before = c.substring(Math.max(0, m.index - 10), m.index)
+                  if (/int\s*$/.test(before)) continue
+                  return true
+                }
+              }
+              return false
+            },
+            title: 'Accès hors limites — case inexistante',
+            message: `Tu accèdes à une case qui n'existe pas. Pour int points[5], les indices valides sont [0] à [4]. Un indice ≥ 5 sort du tableau — le C ne prévient pas et le résultat est imprévisible.`,
+            followUp: {
+              question: `Pour un tableau de 5 éléments, quel est le premier indice valide ? Quel est le dernier ?`,
+              hint: `Premier = toujours 0. Dernier = taille - 1 = 4. L'indice 5 n'existe pas pour un tableau de taille 5.`,
+            },
+            analogy: `Imagine 5 sièges numérotés [0] à [4] dans une rangée. Chercher le siège [5] — il n'existe pas. En mémoire, tu vas "t'asseoir" dans la zone de données suivante sans t'en rendre compte.`,
+          },
+        ],
       },
     },
 
@@ -245,6 +302,41 @@ int main() {
 
     return 0;
 }`,
+        errorPatterns: [
+          {
+            id: 'eq2-out-of-bounds',
+            detect: (c) => {
+              const re = /scores\s*\[\s*(\d+)\s*\]/gi
+              let m
+              while ((m = re.exec(c)) !== null) {
+                if (parseInt(m[1]) >= 5) {
+                  const before = c.substring(Math.max(0, m.index - 10), m.index)
+                  if (/int\s*$/.test(before)) continue
+                  return true
+                }
+              }
+              return false
+            },
+            title: 'Accès hors limites — la flèche sort du tableau',
+            message: `Tu utilises un indice trop grand. Le tableau scores a 5 cases : indices valides [0] à [4]. Un indice ≥ 5 sort du tableau — le C ne prévient pas, le résultat est imprévisible.`,
+            followUp: {
+              question: `Pour un tableau de 5 éléments, quel est le dernier indice valide ? Et pour un tableau de 10 éléments ?`,
+              hint: `Dernier indice = taille - 1. Pour 5 cases : max = 4. Pour 10 cases : max = 9.`,
+            },
+            analogy: `Visualise la flèche d'accès. Le tableau de 5 cases = 5 boîtes alignées. La flèche peut pointer sur [0] à [4]. Si elle va sur [5], elle sort des boîtes et pointe dans une zone inconnue — potentiellement une autre variable de ton programme.`,
+          },
+          {
+            id: 'eq2-printf-no-format',
+            detect: (c) => /printf\s*\(\s*scores\s*\[/i.test(c),
+            title: 'Syntaxe printf incorrecte — chaîne de format manquante',
+            message: `printf attend une chaîne de format entre guillemets en premier argument.\n\nCorrection : printf("%d", scores[0])\n\nLe %d est le marqueur qui dit "insère ici un entier".`,
+            followUp: {
+              question: `Comment afficher la valeur de scores[3] avec printf ? Écris la ligne complète.`,
+              hint: `printf("%d", scores[3]); — toujours : chaîne de format d'abord, variable ensuite.`,
+            },
+            analogy: `printf fonctionne comme un panneau à remplir. La chaîne "%d" c'est le panneau avec un trou en forme de nombre. Sans ce trou (%d), printf ne sait pas où insérer ton nombre — comme une affiche sans espace pour écrire le nom.`,
+          },
+        ],
       },
     },
 

@@ -10,6 +10,7 @@ import {
   HiOutlineLightBulb,
   HiOutlineCode,
   HiOutlineX,
+  HiOutlineLockClosed,
 } from 'react-icons/hi'
 import { getLessonByProfile } from '../data/lessons/index'
 import { useAuth } from '../hooks/useAuth'
@@ -125,25 +126,40 @@ export default function LearningPage() {
   const navigate    = useNavigate()
   const lesson      = getLessonByProfile(profile?.id)
 
-  const [currentStep, setCurrentStep] = useState(0)
-  const [completed, setCompleted]     = useState(false)
-  const [showEditor, setShowEditor]   = useState(false)
-  const [showChat, setShowChat]       = useState(false)
+  const [currentStep, setCurrentStep]   = useState(0)
+  const [completed, setCompleted]       = useState(false)
+  const [showEditor, setShowEditor]     = useState(false)
+  const [showChat, setShowChat]         = useState(false)
+  const [practicedSteps, setPracticedSteps] = useState(new Set())
+  const [showPracticeAlert, setShowPracticeAlert] = useState(false)
 
-  const step    = lesson.steps[currentStep]
-  const isFirst = currentStep === 0
-  const isLast  = currentStep === lesson.steps.length - 1
+  const step       = lesson.steps[currentStep]
+  const isFirst    = currentStep === 0
+  const isLast     = currentStep === lesson.steps.length - 1
+  const canAdvance = !step.exercise || practicedSteps.has(currentStep)
+
+  const markPracticed = () => {
+    setPracticedSteps((prev) => new Set([...prev, currentStep]))
+    setShowPracticeAlert(false)
+  }
 
   const goNext = () => {
+    if (!canAdvance) {
+      setShowPracticeAlert(true)
+      setTimeout(() => setShowPracticeAlert(false), 3000)
+      return
+    }
     if (isLast) { setCompleted(true); return }
     setCurrentStep((s) => s + 1)
     setShowEditor(false)
+    setShowPracticeAlert(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goPrev = () => {
     setCurrentStep((s) => s - 1)
     setShowEditor(false)
+    setShowPracticeAlert(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -152,7 +168,7 @@ export default function LearningPage() {
     return (
       <div className="min-h-screen bg-[#060d1f] bg-mesh flex flex-col">
         <CompletionScreen
-          onRestart={() => { setCurrentStep(0); setCompleted(false) }}
+          onRestart={() => { setCurrentStep(0); setCompleted(false); setPracticedSteps(new Set()) }}
           onExit={() => navigate('/dashboard')}
         />
       </div>
@@ -370,30 +386,55 @@ export default function LearningPage() {
 
         {/* ── Navigation bas ── */}
         <div className="shrink-0 px-4 sm:px-10 py-4 border-t border-white/6 glass">
-          <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
-            <button
-              onClick={goPrev}
-              disabled={isFirst}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
-                glass hover:bg-white/10 text-white/50 hover:text-white/80
-                transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <HiArrowLeft className="w-4 h-4" />
-              Précédent
-            </button>
+          <div className="max-w-2xl mx-auto space-y-2">
+            {/* Alerte pratique */}
+            {showPracticeAlert && (
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl
+                bg-amber-500/10 border border-amber-500/25 animate-pulse-once">
+                <HiOutlineLockClosed className="w-4 h-4 text-amber-400 shrink-0" />
+                <p className="text-xs text-amber-300 leading-snug">
+                  Pratique au moins un exercice avant de continuer.
+                  Clique sur <span className="font-semibold">Pratiquer</span> pour ouvrir l'éditeur.
+                </p>
+              </div>
+            )}
 
-            <span className="text-xs text-white/20 hidden sm:block">{step.badge}</span>
+            <div className="flex items-center justify-between gap-4">
+              <button
+                onClick={goPrev}
+                disabled={isFirst}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                  glass hover:bg-white/10 text-white/50 hover:text-white/80
+                  transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <HiArrowLeft className="w-4 h-4" />
+                Précédent
+              </button>
 
-            <button
-              onClick={goNext}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                bg-gradient-to-r from-blue-600 to-indigo-600 text-white
-                hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.01]
-                shadow-lg shadow-blue-500/20 transition-all"
-            >
-              {isLast ? 'Terminer' : 'Suivant'}
-              <HiArrowRight className="w-4 h-4" />
-            </button>
+              {/* Centre : badge ou message de blocage */}
+              {!canAdvance && step.exercise ? (
+                <div className="hidden sm:flex items-center gap-1.5 text-xs text-amber-400/60">
+                  <HiOutlineLockClosed className="w-3.5 h-3.5" />
+                  <span>Pratique d'abord</span>
+                </div>
+              ) : (
+                <span className="text-xs text-white/20 hidden sm:block">{step.badge}</span>
+              )}
+
+              <button
+                onClick={goNext}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                  transition-all ${
+                  canAdvance
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.01] shadow-lg shadow-blue-500/20'
+                    : 'bg-white/8 border border-white/10 text-white/30 cursor-not-allowed'
+                }`}
+              >
+                {!canAdvance && <HiOutlineLockClosed className="w-4 h-4" />}
+                {isLast ? 'Terminer' : 'Suivant'}
+                {canAdvance && <HiArrowRight className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -449,7 +490,7 @@ export default function LearningPage() {
             {/* Contenu éditeur */}
             <div className="flex-1 overflow-y-auto p-5">
               {step.exercise
-                ? <PracticeEditor exercise={step.exercise} />
+                ? <PracticeEditor exercise={step.exercise} onFirstPass={markPracticed} />
                 : (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-white/25 text-sm">Pas d'exercice pour cette étape.</p>
@@ -476,10 +517,10 @@ export default function LearningPage() {
 
           <div
             className="fixed z-50 animate-float-in
-              bottom-0 left-0 right-0
-              sm:bottom-5 sm:right-5 sm:left-auto sm:w-[360px]
-              w-full"
-            style={{ height: '78vh', maxHeight: 'calc(100vh - 60px)' }}
+              bottom-0 left-0 right-0 w-full
+              h-[78vh] max-h-[calc(100vh-60px)]
+              sm:bottom-4 sm:right-4 sm:left-auto sm:w-[460px] sm:h-[86vh] sm:max-h-none
+              lg:top-4 lg:bottom-4 lg:right-4 lg:left-auto lg:w-[500px] lg:h-auto"
           >
             {/* Lueur décorative — desktop seulement */}
             <div className="absolute -inset-3 rounded-[2rem] bg-violet-500/8 blur-2xl

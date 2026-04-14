@@ -23,13 +23,13 @@ export const PROFILES = [
   },
   {
     id: 'visuel',
-    name: 'L\'Apprenant Visuel',
-    subtitle: 'Visuel · Séquentiel',
-    tagline: 'Je vois, je comprends',
+    name: 'Actif + Visuel',
+    subtitle: 'Actif · Visuel',
+    tagline: 'Je fais, je vois, je comprends',
     description:
-      'Tu retiens mieux avec des schémas, des couleurs et une progression claire. L\'ordre et la structure sont tes meilleurs alliés.',
-    traits: ['Comprend avec des schémas', 'Aime l\'ordre', 'Progresse étape par étape'],
-    needs: ['Schémas & infographies', 'Cours structurés', 'Progression guidée'],
+      'Tu apprends en expérimentant et en voyant le résultat. Les animations, les schémas interactifs et les exercices pratiques te parlent plus que la théorie pure.',
+    traits: ['Apprend en expérimentant', 'Retient avec des visuels', 'Aime voir le résultat en direct'],
+    needs: ['Exercices interactifs', 'Schémas animés', 'Retour visuel immédiat'],
     color: 'blue',
     gradient: 'from-blue-500 to-cyan-400',
     gradientBg: 'from-blue-500/12 to-cyan-400/12',
@@ -42,8 +42,8 @@ export const PROFILES = [
   },
   {
     id: 'visuel-intuitif',
-    name: 'Visuel + Intuitif',
-    subtitle: 'Visuel · Intuitif',
+    name: 'Visuel + Réflexif',
+    subtitle: 'Visuel · Réflexif',
     tagline: 'Je vois le tout avant les détails',
     description:
       'Tu comprends mieux quand tu vois d\'abord le schéma global. Les idées créatives et les connexions entre concepts t\'inspirent naturellement.',

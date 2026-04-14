@@ -9,6 +9,7 @@ import {
   HiOutlineRefresh,
   HiOutlineClipboardCopy,
   HiOutlineCheck,
+  HiOutlineExclamation,
 } from 'react-icons/hi'
 import CodeBlock from './CodeBlock'
 
@@ -35,8 +36,62 @@ function CheckResult({ check, status }) {
   )
 }
 
+/* ─── Panneau de diagnostic d'erreur ─── */
+function DiagnosticPanel({ detectedError }) {
+  if (!detectedError) return null
+  const { pattern, isSecondOccurrence } = detectedError
+
+  return (
+    <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] overflow-hidden">
+      {/* En-tête */}
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-amber-500/15">
+        <HiOutlineExclamation className="w-4 h-4 text-amber-400 shrink-0" />
+        <p className="text-sm font-semibold text-amber-400">{pattern.title}</p>
+      </div>
+
+      <div className="px-4 py-3.5 space-y-3">
+        {/* Message ou analogie (selon le nb d'occurrences) */}
+        <div className="flex items-start gap-2.5">
+          <HiOutlineLightBulb className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            {isSecondOccurrence && pattern.analogy ? (
+              <>
+                <p className="text-[10px] font-semibold text-amber-400/60 uppercase tracking-wider mb-1">
+                  Analogie
+                </p>
+                <p className="text-sm text-amber-200/80 leading-relaxed whitespace-pre-line">
+                  {pattern.analogy}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-amber-200/80 leading-relaxed whitespace-pre-line">
+                {pattern.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Exercice de suivi immédiat */}
+        {pattern.followUp && (
+          <div className="px-3.5 py-3 rounded-xl bg-blue-500/8 border border-blue-500/20">
+            <p className="text-[10px] font-semibold text-blue-400/60 uppercase tracking-wider mb-1.5">
+              Exercice immédiat
+            </p>
+            <p className="text-sm text-blue-300/90 leading-relaxed mb-2">
+              {pattern.followUp.question}
+            </p>
+            <p className="text-xs text-blue-400/50 italic leading-relaxed">
+              Indice : {pattern.followUp.hint}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ─── Éditeur de pratique principal ─── */
-export default function PracticeEditor({ exercise }) {
+export default function PracticeEditor({ exercise, onFirstPass }) {
   const [code, setCode]             = useState(exercise.starter ?? '')
   const [results, setResults]       = useState(null)   // null | check[]
   const [validated, setValidated]   = useState(false)
@@ -45,6 +100,8 @@ export default function PracticeEditor({ exercise }) {
   const [showSolution, setShowSolution] = useState(false)
   const [attempts, setAttempts]     = useState(0)
   const [copied, setCopied]         = useState(false)
+  const [detectedError, setDetectedError]   = useState(null)   // { pattern, isSecondOccurrence }
+  const [shownErrorIds, setShownErrorIds]   = useState(new Set())
   const textareaRef = useRef(null)
 
   const hints    = exercise.hints   ?? []
@@ -54,15 +111,36 @@ export default function PracticeEditor({ exercise }) {
 
   /* ── Validation ── */
   const validate = () => {
+    const errorPatterns = exercise.errorPatterns ?? []
     const newResults = checks.map((check) => ({
       ...check,
       passed: check.test(code),
     }))
     const allPassed = newResults.every((r) => r.passed)
+    const passedNow = newResults.filter((r) => r.passed).length
     setResults(newResults)
     setValidated(true)
     setAllGood(allPassed)
     setAttempts((a) => a + 1)
+    if (passedNow > 0) onFirstPass?.()
+
+    // Détection d'erreur : uniquement si tout n'est pas validé
+    if (!allPassed && errorPatterns.length > 0) {
+      const matched = errorPatterns.find((p) => {
+        try { return p.detect(code) } catch { return false }
+      })
+      if (matched) {
+        const isSecondOccurrence = shownErrorIds.has(matched.id)
+        setDetectedError({ pattern: matched, isSecondOccurrence })
+        if (!isSecondOccurrence) {
+          setShownErrorIds((prev) => new Set([...prev, matched.id]))
+        }
+      } else {
+        setDetectedError(null)
+      }
+    } else {
+      setDetectedError(null)
+    }
   }
 
   /* ── Indice progressif ── */
@@ -78,6 +156,7 @@ export default function PracticeEditor({ exercise }) {
     setAllGood(false)
     setHintLevel(0)
     setShowSolution(false)
+    setDetectedError(null)
     textareaRef.current?.focus()
   }
 
@@ -119,7 +198,7 @@ export default function PracticeEditor({ exercise }) {
             <p className="text-xs font-bold text-blue-400 uppercase tracking-wider">
               {exercise.question}
             </p>
-            {validated && totalChecks > 0 && (
+            {validated && passedCount > 0 && (
               <p className="text-[10px] text-white/35 mt-0.5">
                 {passedCount}/{totalChecks} critère{totalChecks > 1 ? 's' : ''} validé{passedCount > 1 ? 's' : ''}
               </p>
@@ -218,14 +297,22 @@ export default function PracticeEditor({ exercise }) {
           />
         )}
 
-        {/* ── Résultats des vérifications ── */}
-        {validated && results && results.length > 0 && (
+        {/* ── Résultats des vérifications — uniquement les checks validés (vert) ── */}
+        {validated && results && (
           <div className="space-y-2">
-            {results.map((r) => (
-              <CheckResult key={r.id} check={r} status={r.passed} />
+            {results.filter((r) => r.passed).map((r) => (
+              <CheckResult key={r.id} check={r} status={true} />
             ))}
+            {!allGood && passedCount === 0 && (
+              <p className="text-xs text-white/25 text-center py-1">
+                Pas encore de critère validé — continue à écrire !
+              </p>
+            )}
           </div>
         )}
+
+        {/* ── Diagnostic d'erreur ── */}
+        <DiagnosticPanel detectedError={detectedError} />
 
         {/* ── Message de succès total ── */}
         {allGood && (
