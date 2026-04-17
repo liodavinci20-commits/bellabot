@@ -91,11 +91,266 @@ int main() {
           `Pour le 4ème jour : printf("%d\\n", temps[3]); — le 4ème jour est à l'indice 3 (car on part de 0).`,
           `Pour le dernier jour : printf("%d\\n", temps[6]); — 7 cases, donc indices de [0] à [6].`,
         ],
-        test: (code) =>
-          /int\s+\w+\s*\[7\]/.test(code) &&
-          /\[3\]/.test(code) &&
-          /\[6\]/.test(code) &&
-          /printf/.test(code),
+        validation: [
+          {
+            id: 'array-7',
+            test: (c) => /int\s+\w+\s*\[\s*7\s*\]/.test(c),
+            success: 'Tableau de 7 cases déclaré ✓',
+            error: 'Déclare un tableau de 7 cases : int nomTableau[7] = {valeurs…}',
+          },
+          {
+            id: 'index-3',
+            test: (c) => /\[\s*3\s*\]/.test(c),
+            success: 'Indice 3 utilisé pour le 4ème jour ✓',
+            error: 'Le 4ème jour est à l\'indice 3 — les indices commencent à 0, donc rang 4 → indice 3',
+          },
+          {
+            id: 'index-6',
+            test: (c) => /\[\s*6\s*\]/.test(c),
+            success: 'Indice 6 utilisé pour le dernier jour ✓',
+            error: 'Le dernier jour est à l\'indice 6 — un tableau de 7 va de [0] à [6]',
+          },
+        ],
+
+        errorPatterns: [
+
+          /* ── Pattern 1 : pas de crochets ─────────────────────── */
+          {
+            id: 'eq1-no-brackets',
+            errorProfile: 'syntaxe-tableau',
+            title: 'Tableau sans crochets — la syntaxe int tableau[n] est absente',
+            detect: (c) => !/int\s+\w+\s*\[\s*\d+\s*\]/.test(c),
+            message: `Tu n'as pas encore utilisé la syntaxe int tableau[n]. Les crochets [] sont la clé de tout : c'est eux qui signalent au compilateur de réserver un bloc de mémoire contigu, adressable par indice.`,
+            adaptedSteps: {
+              fondation: {
+                reminder: {
+                  text: `Rappel Étape 1 : tu n'avais pas encore utilisé int tableau[n]. Ce bloc t'explique pourquoi les crochets [] sont fondamentaux — pas juste une syntaxe à mémoriser, mais le reflet direct d'un choix d'architecture mémoire.`,
+                },
+                intro: `Voici la question conceptuelle derrière les crochets : comment un programme accède-t-il à n'importe quelle case en temps constant ? La réponse est dans la syntaxe elle-même. int temps[7] = {…} dit au compilateur : "Réserve 7 × 4 = 28 octets consécutifs. La case [i] se trouve à l'adresse de départ + i × 4." Sans crochets, pas de bloc réservé — juste une variable isolée. Déduis-en : pourquoi un tableau est-il plus efficace que 7 variables séparées pour une boucle ?`,
+                keyPoint: `int tableau[n] = réservation d'un bloc mémoire contigu de n × 4 octets. Ce n'est pas une liste abstraite — c'est une adresse de départ avec un système d'indexation mathématique. Ce principe réapparaîtra directement avec les pointeurs : un pointeur, c'est exactement cette adresse de départ.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'brackets-memory-schema',
+                    label: 'Pourquoi les crochets existent — vue mémoire',
+                    code: `// ❌ 7 variables séparées — non adressables par indice
+int j1 = 28, j2 = 31, j3 = 25, j4 = 33, j5 = 30, j6 = 27, j7 = 29;
+// → impossible d'écrire une boucle : printf(j[i]) ne fonctionne pas
+
+// ✅ Tableau — un bloc contigu, adressable par calcul
+int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+// → adresse de temps[i] = adresse_base + i × 4 octets
+// → une boucle parcourt tout avec printf("%d", temps[i])`,
+                    type: 'neutral',
+                    comment: `Les crochets créent un espace adressable. C'est la différence entre 7 boîtes séparées et une rangée numérotée.`,
+                  },
+                ],
+              },
+              'acces-modif': {
+                reminder: {
+                  text: `Rappel Étape 1 : syntaxe int tableau[n] à consolider. Ici, tu vas voir comment les crochets permettent d'accéder à n'importe quelle case — lire ou écrire, même mécanique de calcul d'adresse.`,
+                },
+                intro: `La syntaxe temps[i] fonctionne parce que le compilateur connaît l'adresse de chaque case à l'avance : base + i × 4. Que tu lises (printf) ou que tu écrives (temps[i] = valeur), tu utilises ce même calcul. C'est une opération O(1) — indépendante de la taille du tableau. Déduis : est-ce que temps[0] est plus rapide à accéder que temps[999] dans un tableau de 1000 cases ?`,
+                keyPoint: `temps[i] pour lire, temps[i] = x pour écrire. Les deux utilisent le même calcul d'adresse. Ni l'un ni l'autre ne "cherche" la case — il calcule directement où elle est. C'est pourquoi l'accès est instantané, peu importe la taille.`,
+              },
+              boucle: {
+                reminder: {
+                  text: `Rappel Étape 1 : déclaration avec int tableau[n] à maîtriser. La boucle for prend tout son sens dans ce contexte : i joue exactement le rôle d'un indice qui parcourt les adresses consécutives du bloc réservé.`,
+                },
+                intro: `La boucle for et le tableau sont faits l'un pour l'autre. La boucle fait varier i de 0 à n-1 — exactement la plage des indices valides. À chaque tour, temps[i] accède à la case à l'adresse base + i × 4. Connexion globale à retenir : tableau = structure spatiale (cases en mémoire), boucle = structure temporelle (passage dans le temps). Ensemble, ils transforment n opérations identiques en 3 lignes.`,
+                keyPoint: `for(int i = 0; i < 7; i++) { temps[i] } — i est à la fois compteur de boucle ET indice de case. Ce n'est pas une coïncidence : c'est le cœur du paradigme impératif. Tu retrouveras cette même structure en Python, JavaScript, C++ — c'est la norme universelle.`,
+              },
+              defi: {
+                reminder: {
+                  text: `Rappel Étape 1 : syntaxe int tableau[n] à consolider. Ce défi final combine tout — déclare bien int temp[7] = {…} avant de démarrer les algorithmes.`,
+                },
+                intro: `Tu arrives au défi avec la compréhension globale : un tableau est un bloc mémoire contigu, adressable par calcul. Les algorithmes max et moyenne utilisent ce système à chaque itération. Avant de coder, décris en français : comment reconnais-tu le maximum en parcourant une liste ? Quel invariant dois-tu maintenir à chaque étape ? Cette réflexion préalable distingue un programmeur qui comprend d'un programmeur qui copie.`,
+                keyPoint: `max = tableau[0] (hypothèse initiale) + comparaison à chaque case — c'est un algorithme de type "maintien d'invariant". somme / 7.0 — la division flottante est une règle de conversion de type C. Ces deux patterns réapparaissent dans presque tout le code numérique que tu écriras.`,
+              },
+            },
+          },
+
+          /* ── Pattern 2 : taille incorrecte ───────────────────── */
+          {
+            id: 'eq1-size-not-7',
+            errorProfile: 'taille-tableau',
+            title: 'Taille du tableau incorrecte — pas 7 cases',
+            detect: (c) => {
+              const m = c.match(/int\s+\w+\s*\[\s*(\d+)\s*\]/)
+              return m != null && parseInt(m[1]) !== 7
+            },
+            message: `Tu as déclaré un tableau avec une taille différente de 7. La taille n'est pas un détail stylistique — elle définit exactement le nombre d'octets réservés en mémoire.`,
+            adaptedSteps: {
+              fondation: {
+                reminder: {
+                  text: `Rappel Étape 1 : tu avais déclaré un tableau avec une taille incorrecte. Ce bloc t'explique pourquoi la taille est une décision d'architecture, pas un chiffre quelconque — elle détermine directement la mémoire allouée.`,
+                },
+                intro: `La taille dans int tableau[n] n'est pas un label — c'est une instruction directe au compilateur : "réserve n × 4 octets consécutifs". Si tu mets 5 au lieu de 7, seuls 5 × 4 = 20 octets sont réservés ; les données 6 et 7 n'ont pas de case. Si tu mets 10, tu gaspilles 12 octets et les cases [7], [8], [9] contiennent des valeurs résiduelles en mémoire. Déduis : que se passe-t-il si tu accèdes à temps[8] dans un tableau déclaré int temps[7] ?`,
+                keyPoint: `La taille = exactement le nombre de valeurs à stocker. Ni plus (gaspillage + cases non initialisées), ni moins (accès hors-limites = comportement indéfini). Cette précision est ce que les langages modernes abstraient pour toi — en C, tu contrôles directement la mémoire.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'size-impact-schema',
+                    label: 'Impact de la taille — vue mémoire',
+                    code: `// ✅ Taille exacte = 7
+int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+// ┌────┬────┬────┬────┬────┬────┬────┐
+// │ 28 │ 31 │ 25 │ 33 │ 30 │ 27 │ 29 │
+// └────┴────┴────┴────┴────┴────┴────┘
+//  [0]  [1]  [2]  [3]  [4]  [5]  [6]
+
+// ❌ Taille trop petite (5) — données manquantes
+int temps[5] = {28, 31, 25, 33, 30};
+// ┌────┬────┬────┬────┬────┐
+// │ 28 │ 31 │ 25 │ 33 │ 30 │   [5] et [6] n'existent pas !
+// └────┴────┴────┴────┴────┘`,
+                    type: 'neutral',
+                    comment: `La taille détermine l'espace réservé. Trop petit → données perdues. Trop grand → cases inutilisées avec valeurs aléatoires.`,
+                  },
+                ],
+              },
+              'acces-modif': {
+                reminder: {
+                  text: `Rappel Étape 1 : taille incorrecte déclarée. La taille est directement liée aux indices valides : pour int tableau[n], les indices valides vont de [0] à [n-1].`,
+                },
+                intro: `Si tu déclares int temps[5] mais essaies d'accéder à temps[6], tu lis une case qui ne t'appartient pas — valeur aléatoire ou erreur de segmentation. C ne vérifie pas les bornes à l'exécution : c'est à toi de le faire. Règle invariante : dernier indice valide = taille - 1. Pour 7 cases : indices [0] à [6]. Pour 5 cases : indices [0] à [4].`,
+                keyPoint: `Indices valides de int tableau[n] : [0] à [n-1]. Cette règle découle du calcul d'adresse : adresse[n-1] = base + (n-1) × 4 est la dernière adresse réservée. Elle est universelle en C.`,
+              },
+              boucle: {
+                reminder: {
+                  text: `Rappel Étape 1 : taille du tableau à vérifier. Dans la boucle for, la condition i < n doit correspondre EXACTEMENT à la taille déclarée — ni plus, ni moins.`,
+                },
+                intro: `La connexion entre taille du tableau et condition de boucle est directe : for(int i = 0; i < 7; i++) est correct si et seulement si le tableau a exactement 7 cases. Si tu déclares temps[5] mais fais i < 7, tu accèdes à temps[5] et temps[6] qui n'existent pas. Bonne pratique : ne jamais écrire la taille en dur deux fois — tu verras plus tard #define N 7 pour l'unifier.`,
+                keyPoint: `for(int i = 0; i < TAILLE; i++) — la TAILLE dans la condition doit être identique à celle dans la déclaration. Si tu changes l'une sans l'autre, le programme accède à de la mémoire non réservée. C'est une source classique de bugs.`,
+              },
+              defi: {
+                reminder: {
+                  text: `Rappel Étape 1 : assure-toi de déclarer int temp[7] avec exactement 7 cases. Les algorithmes max et moyenne parcourent exactement les 7 cases — les trois "7" du programme (déclaration, boucles, division) sont liés.`,
+                },
+                intro: `Pour le défi, la taille est le fil conducteur : 7 dans la déclaration, i < 7 dans les boucles, 7.0 dans le calcul de moyenne. Si tu changes le nombre de données, ces trois endroits changent ensemble. Bonne pratique : définir la taille une seule fois (#define N 7) et l'utiliser partout. Retiens simplement que tous ces "7" sont la même valeur, exprimée à différents endroits.`,
+                keyPoint: `La taille du tableau est l'invariant central de tout programme sur les tableaux. Déclare-la une fois, utilise-la partout. C'est le premier pas vers l'abstraction : quand tu verras les fonctions qui prennent la taille en paramètre, tu comprendras pourquoi.`,
+              },
+            },
+          },
+
+          /* ── Pattern 3 : indice 4 au lieu de 3 (base-0) ─────── */
+          {
+            id: 'eq1-index-4-not-3',
+            errorProfile: 'confusion-base-0',
+            title: 'Indice [4] au lieu de [3] — confusion rang / offset',
+            detect: (c) => /printf[^;]*\[\s*4\s*\]/.test(c) && !/\[\s*3\s*\]/.test(c),
+            message: `Tu as utilisé l'indice [4] pour le 4ème jour au lieu de [3]. C'est la confusion rang/offset — un classique base-0. L'indice n'est pas un rang : c'est un décalage depuis le début du tableau.`,
+            adaptedSteps: {
+              fondation: {
+                reminder: {
+                  text: `Rappel Étape 1 : tu avais utilisé [4] pour le 4ème jour (devrait être [3]). Ce bloc t'explique pourquoi la base-0 existe et comment en faire un réflexe par la logique, pas par la mémorisation.`,
+                },
+                intro: `Voici la question conceptuelle : pourquoi les indices commencent-ils à 0 et non à 1 ? La réponse est dans le calcul d'adresse : adresse de notes[i] = base + i × 4. Si on part de 0, la 1ère case est à base + 0 × 4 = base. Élégant. Si on partait de 1, la 1ère case serait à base + 1 × 4 — il faudrait soustraire 1 à chaque calcul. La base-0 n'est pas un caprice : c'est le reflet direct de l'arithmétique des adresses. Déduis la formule : pour convertir un rang en indice, que fais-tu ?`,
+                keyPoint: `Indice = rang - 1. La 1ère case est [0], la 4ème est [3], la nème est [n-1]. Cette convention vient de l'arithmétique des adresses mémoire. Tu la retrouveras en Python, Java, JavaScript — c'est la norme universelle du monde impératif.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'rank-vs-offset',
+                    label: 'Rang vs indice — deux systèmes de numérotation',
+                    code: `int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+//
+//  Rang  :  1    2    3    4    5    6    7
+//         ┌────┬────┬────┬────┬────┬────┬────┐
+//         │ 28 │ 31 │ 25 │ 33 │ 30 │ 27 │ 29 │
+//         └────┴────┴────┴────┴────┴────┴────┘
+//  Indice:  0    1    2    3    4    5    6
+//
+// 4ème jour → rang 4 → indice 3 → temps[3] = 33
+// Formule : indice = rang - 1`,
+                    type: 'neutral',
+                    comment: `Les langages humains numérotent à partir de 1 (1er, 2ème...). L'informatique numérote à partir de 0 (décalages). Comprendre cette différence évite 90% des bugs d'indices.`,
+                  },
+                ],
+              },
+              'acces-modif': {
+                reminder: {
+                  text: `Rappel Étape 1 : confusion rang/indice ([4] au lieu de [3]). Pour accéder à la nème case, utilise toujours l'indice n-1.`,
+                },
+                intro: `À chaque accès, tu fais un calcul d'adresse. notes[3] ne demande pas "quelle est la 4ème case" — il dit "va à base + 3 × 4". Le résultat est la 4ème valeur, mais la mécanique est un décalage. Ancre le réflexe : quand tu vois "4ème jour", traduis mentalement en "décalage de 3 depuis le début". Formule universelle : rang N → indice N-1.`,
+                keyPoint: `notes[i] accède à la case à l'adresse base + i × 4. i = 0 → 1ère case, i = 1 → 2ème, i = 3 → 4ème. Règle invariante : pour accéder à la nème case, utilise l'indice n-1. Toujours.`,
+              },
+              boucle: {
+                reminder: {
+                  text: `Rappel Étape 1 : rang vs indice (rang N → indice N-1). Dans la boucle, i varie de 0 à n-1 précisément parce que les indices valides sont 0, 1, 2 … n-1. La condition i < n encode directement cette règle.`,
+                },
+                intro: `La boucle for(int i = 0; i < 7; i++) est la traduction de "visite tous les indices de [0] à [6]". La condition i < 7 s'arrête quand i atteint 7 — qui n'est pas un indice valide (le dernier est [6]). Si on écrivait i <= 7, on accèderait à temps[7] : hors-limites. Connexion conceptuelle : la boucle incarne exactement la plage des indices valides.`,
+                keyPoint: `for(int i = 0; i < TAILLE; i++) — la condition i < TAILLE encode "dernier indice valide = TAILLE - 1". C'est pourquoi on écrit < et non <=. Pas arbitraire : cohérent avec l'indexation base-0.`,
+              },
+              defi: {
+                reminder: {
+                  text: `Rappel Étape 1 : rang N → indice N-1. Dans le défi, max = temp[0] accède au 1er élément (rang 1, indice 0). La boucle démarre à i=1 pour ne pas recomparer la 1ère valeur avec elle-même.`,
+                },
+                intro: `Dans l'algorithme du maximum : max = temp[0] puis for(i = 1; i < 7; i++). Remarques-tu la cohérence ? La 1ère case (rang 1) est l'indice 0. La boucle commence à l'indice 1 (rang 2) pour ne pas reconsidérer l'hypothèse de départ. Chaque indice dans ce code est un "décalage" précis. Entraîne-toi à penser en indices (0-based), pas en rangs — c'est le langage du C.`,
+                keyPoint: `Dans tout algorithme C : rang N → indice N-1. max = temp[0] (1er), boucle de i=1 (2ème) à i=6 (7ème). Cette cohérence avec la base-0 rend le code C prévisible et calculable.`,
+              },
+            },
+          },
+
+          /* ── Pattern 4 : indice [7] hors limites ─────────────── */
+          {
+            id: 'eq1-index-7-out-of-bounds',
+            errorProfile: 'indice-hors-limites',
+            title: 'Indice [7] hors limites — le dernier indice est [6]',
+            detect: (c) => /printf[^;]*\[\s*7\s*\]/.test(c),
+            message: `Tu as utilisé l'indice [7] pour le dernier jour. Mais un tableau de 7 cases a ses indices de [0] à [6] — il n'y a pas de case [7]. Accéder à temps[7] lit une zone mémoire non réservée.`,
+            adaptedSteps: {
+              fondation: {
+                reminder: {
+                  text: `Rappel Étape 1 : accès à temps[7] qui n'existe pas dans un tableau de 7 cases. Ce bloc t'explique pourquoi la borne supérieure est toujours taille-1, et ce qui se passe réellement quand on la dépasse.`,
+                },
+                intro: `Voici la règle structurelle : int tableau[n] réserve exactement n cases, aux indices [0] à [n-1]. Il n'y a pas de garde-fou — si tu accèdes à tableau[n], C calcule quand même une adresse (base + n × 4) et lit ce qui s'y trouve, qu'il t'appartienne ou non. En C, cela s'appelle "undefined behavior" : le programme peut afficher n'importe quoi, crasher, ou sembler fonctionner par hasard. C'est l'une des sources les plus connues de vulnérabilités de sécurité (buffer overflow). Déduis : pourquoi la règle "indice max = taille - 1" est-elle non négociable ?`,
+                keyPoint: `Indices valides de int tableau[n] : [0] à [n-1]. C ne vérifie pas les bornes — c'est à toi de le faire. Accéder à tableau[n] est un comportement indéfini. Cette règle absolue te prépare maintenant à éviter les buffer overflows — une classe entière de vulnérabilités de sécurité.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'out-of-bounds-schema',
+                    label: 'Visualisation — accès hors limites',
+                    code: `int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+// Indices valides :
+// ┌────┬────┬────┬────┬────┬────┬────┐
+// │ 28 │ 31 │ 25 │ 33 │ 30 │ 27 │ 29 │
+// └────┴────┴────┴────┴────┴────┴────┘
+//  [0]  [1]  [2]  [3]  [4]  [5]  [6]    [7] ← hors tableau !
+//
+// temps[7] → C calcule base + 7×4 → zone non réservée
+// → valeur aléatoire, crash possible, ou "ça fonctionne par chance"
+
+// ✅ Dernier jour → temps[6]  (taille 7 → dernier indice = 7-1 = 6)`,
+                    type: 'bad',
+                    comment: `temps[7] dans un tableau de 7 est l'erreur classique. La mémoire continue après le tableau — C lit ce qui s'y trouve sans avertissement.`,
+                  },
+                ],
+              },
+              'acces-modif': {
+                reminder: {
+                  text: `Rappel Étape 1 : accès hors-limites à temps[7]. Règle absolue : le dernier indice valide est toujours taille-1. Pour int temps[7], c'est temps[6].`,
+                },
+                intro: `Lire ou modifier une case hors des bornes est un bug silencieux — C ne prévient pas. notes[7] dans un tableau de 7 cases accède à une case "fantôme" : une adresse mémoire qui peut appartenir à une autre variable, à la pile d'exécution, ou à n'importe quoi d'autre. Comment calculer le dernier indice : taille - 1. Pour 7 cases : 7 - 1 = 6. Pour 30 cases : 30 - 1 = 29. La formule est toujours identique.`,
+                keyPoint: `Dernier indice valide = n - 1 (pour int tableau[n]). Ce n'est pas une règle à mémoriser bêtement : c'est la conséquence directe de l'indexation base-0. Si les indices vont de 0 à n-1, il y en a exactement n — ce qui correspond à la taille déclarée.`,
+              },
+              boucle: {
+                reminder: {
+                  text: `Rappel Étape 1 : indice [7] hors-limites pour un tableau de 7. Dans la boucle for, la condition i < 7 garantit que i ne dépasse jamais 6 — le dernier indice valide.`,
+                },
+                intro: `La condition i < TAILLE dans la boucle for est le garde-fou contre l'accès hors-limites. for(i = 0; i < 7; i++) — quand i atteint 7, la condition est fausse, la boucle s'arrête avant d'accéder à temps[7]. Si on écrivait i <= 7, le dernier tour ferait temps[7] : hors-limites. Connexion : la condition i < n encode exactement la contrainte "indice max = n-1". C'est pour ça qu'on écrit < et non <=.`,
+                keyPoint: `for(int i = 0; i < TAILLE; i++) — la condition i < TAILLE (et non i <= TAILLE) garantit que le dernier accès est tableau[TAILLE-1], jamais tableau[TAILLE]. Une ligne qui prévient l'accès hors-limites à chaque itération.`,
+              },
+              defi: {
+                reminder: {
+                  text: `Rappel Étape 1 : indice [7] hors-limites pour taille 7. Dans le défi, toutes les boucles utilisent i < 7 — vérifie que tu n'accèdes jamais à temp[7] ni directement ni via la boucle.`,
+                },
+                intro: `Dans l'algorithme du maximum, la boucle parcourt de i=1 à i < 7 — soit i=1 jusqu'à i=6. La case temp[6] est le 7ème jour (dernier), pas temp[7]. Visualise la carte : 7 cases = indices [0] à [6]. Tout accès doit rester dans cette plage. Attention : le programme peut sembler fonctionner même avec temp[7] — le comportement indéfini est parfois le pire cas : pas de crash visible, mais une valeur corrompue dans un résultat apparemment correct.`,
+                keyPoint: `Dans tout programme C : pour un tableau de n cases, n'accède jamais à l'indice n. Le dernier accès valide est toujours [n-1]. Cette règle s'applique dans la déclaration, dans les accès directs, et dans les conditions de boucle.`,
+              },
+            },
+          },
+
+        ],
       },
     },
 

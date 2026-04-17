@@ -1,3 +1,10 @@
+import {
+  AnimNoSize,
+  AnimSizeTooSmall,
+  AnimSizeTooLarge,
+  AnimWrongIndex,
+} from '../../components/learning/animations/ActifAnimations.jsx'
+
 // ─────────────────────────────────────────────────────────────
 // Leçon : Les tableaux en C
 // Profil : Actif + Sensoriel (Pratique)
@@ -103,6 +110,184 @@ int main() {
             error: 'Pour afficher le 3ème match : printf("%d", points[2]); — l\'indice du 3ème élément est 2.',
           },
         ],
+
+        errorPatterns: [
+
+          /* ── E1 : Tableau sans crochets ──────────────────────── */
+          {
+            id: 'eq1-no-size',
+            errorProfile: 'tableau-variable-simple',
+            title: 'Tableau déclaré sans taille',
+            detect: (c) => /int\s+points\b/.test(c) && !/int\s+points\s*\[/.test(c),
+            message: `Tu as écrit "int points" sans crochets. En C, un tableau DOIT avoir une taille entre crochets : int points[5]. Sans ça, le programme ne sait pas combien de cases réserver en mémoire.`,
+            analogy: `C'est comme commander "des billets de cinéma" sans dire combien. Le guichetier ne peut rien faire. Avec int points[5], tu dis exactement : "réserve-moi 5 cases en mémoire".`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais écrit int points sans crochets — voici pourquoi la taille est indispensable.` },
+                intro: `Tu avais écrit int points sans crochets. Le problème : sans la taille, le programme ne sait pas combien de cases préparer en mémoire. C'est comme demander à quelqu'un de te garder "des" places au cinéma sans préciser combien — il ne peut rien faire. int points[5] dit exactement : "prépare-moi 5 cases". Ces 5 cases existent maintenant en mémoire, côte à côte, chacune numérotée de 0 à 4. Pour lire ou modifier l'une d'elles, tu donnes son numéro — son indice.`,
+                keyPoint: `Chaque case existe parce que tu l'as déclarée avec une taille. Si tu avais oublié le [5], il n'y aurait rien à lire, rien à modifier — juste du vide en mémoire. La taille dans les crochets, c'est le contrat que tu passes avec le programme.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-no-size',
+                    label: 'Visualisation — réservation mémoire',
+                    type: 'animation',
+                    component: AnimNoSize,
+                  },
+                ],
+              },
+              remplir: {
+                reminder: { text: `Rappel : sans int points[5], il n'y a nulle part où stocker les valeurs saisies.` },
+                intro: `Quand tu utilises scanf pour remplir un tableau, chaque case doit déjà exister en mémoire — réservée par la déclaration. C'est pour ça que int points[5] est la première ligne indispensable : sans cette déclaration avec sa taille, scanf ne saurait pas où stocker les valeurs. Il écrirait dans une zone mémoire inconnue et le programme planterait.`,
+                keyPoint: `scanf écrit à une adresse précise en mémoire. Cette adresse n'existe que si tu as déclaré le tableau avec sa taille. Déclarer d'abord, remplir ensuite — toujours dans cet ordre.`,
+              },
+              recherche: {
+                reminder: { text: `Rappel : les cases 0 à 4 existent parce que tu as déclaré int points[5].` },
+                intro: `Pour trouver le minimum ou le maximum, on regarde les cases une par une. Ces cases existent parce que tu as écrit int points[5] — 5 cases, indices 0 à 4. Si tu avais oublié la taille, il n'y aurait aucune case à examiner. La recherche commence toujours par min = points[0] — la première case réservée — puis on compare avec les suivantes.`,
+                keyPoint: `On initialise min avec points[0] et non avec 0. Pourquoi ? Parce que si toutes les valeurs étaient négatives (-5, -8...) et qu'on partait de 0, le résultat serait faux. La seule valeur de départ fiable, c'est une valeur qui vient du tableau lui-même.`,
+              },
+              parcours: {
+                reminder: { text: `Rappel : la boucle tourne exactement 5 fois — une fois par case déclarée dans points[5].` },
+                intro: `La boucle for(int i = 0; i < 5; i++) tourne exactement 5 fois — une fois par case réservée. Ce 5 dans la condition n'est pas un hasard : il correspond exactement au [5] de ta déclaration. C'est le lien direct entre "combien de cases j'ai réservées" et "combien de fois je dois parcourir".`,
+                keyPoint: `La condition de boucle i < N doit toujours correspondre à la taille déclarée. C'est la même valeur, aux deux endroits. Si tu changes la taille du tableau, tu dois changer la condition de la boucle en même temps.`,
+              },
+            },
+          },
+
+          /* ── E2a : Taille trop petite ─────────────────────────── */
+          {
+            id: 'eq1-size-too-small',
+            errorProfile: 'taille-sous-estimee',
+            title: 'Taille déclarée trop petite',
+            detect: (c) => {
+              const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/)
+              return m != null && parseInt(m[1]) < 5
+            },
+            message: `Tu as déclaré points avec une taille inférieure à 5 pour stocker 5 valeurs. En C, la taille doit correspondre exactement au nombre de valeurs. Les cases manquantes n'ont nulle part où aller — elles écrasent la mémoire voisine.`,
+            analogy: `C'est comme commander une boîte de 4 œufs pour en mettre 5. Le 5ème tombe hors de la boîte — et en C, ça ne plante pas toujours : il écrase silencieusement une autre donnée.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais déclaré une taille trop petite — rappel sur pourquoi la taille doit être exacte.` },
+                intro: `Tu avais déclaré points avec une taille inférieure à 5 pour stocker 5 valeurs. En C, quand tu déclares points[4], le programme réserve exactement 4 cases — les indices 0, 1, 2 et 3. La 5ème valeur n'avait nulle part où aller. Elle aurait été écrite dans une zone mémoire qui ne t'appartient pas : un dépassement mémoire. Dangereux car le programme ne plante pas toujours — il continue parfois avec des données corrompues.`,
+                keyPoint: `La taille déclarée doit être exactement égale au nombre de valeurs que tu veux stocker. Compte tes valeurs, puis écris ce nombre entre les crochets. Ni un de moins, ni un de plus.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-size-too-small',
+                    label: 'Visualisation — boîte trop petite',
+                    type: 'animation',
+                    component: AnimSizeTooSmall,
+                  },
+                ],
+              },
+              remplir: {
+                reminder: { text: `Rappel : taille déclarée = nombre de saisies attendues. Ni plus, ni moins.` },
+                intro: `Quand tu remplis avec une boucle, elle tourne autant de fois que la taille déclarée. Si tu déclares [4] mais que tu as 5 valeurs à saisir, la 5ème saisie va être stockée hors du tableau. La règle : taille déclarée = nombre d'itérations de la boucle = nombre de valeurs attendues. Ces trois chiffres doivent toujours être identiques.`,
+                keyPoint: `Quand tu conçois un tableau, commence par compter combien de valeurs tu vas stocker. Ce nombre devient ta taille, le nombre de tours de boucle, et le nombre de saisies. Un seul nombre, trois endroits où il apparaît.`,
+              },
+              recherche: {
+                reminder: { text: `Rappel : un tableau trop petit fait manquer des valeurs dans la recherche de min/max.` },
+                intro: `La recherche du min et du max parcourt toutes les cases déclarées. Si tu avais points[4] au lieu de [5], la boucle ne verrait que 4 valeurs — elle n'aurait jamais accès à la 5ème. Le max ou le min pourrait être dans cette case manquante, et ton résultat serait faux sans que tu t'en rendes compte.`,
+                keyPoint: `Un tableau trop petit ne cause pas toujours une erreur visible — il donne parfois des résultats silencieusement faux. C'est le pire type de bug : le programme tourne, mais les calculs sont incorrects.`,
+              },
+              parcours: {
+                reminder: { text: `Rappel : la condition i < N doit correspondre à la taille réelle du tableau.` },
+                intro: `La condition i < 5 dans ta boucle doit correspondre à la taille réelle de ton tableau. Si tu déclares [4] mais boucles jusqu'à i < 5, tu lis une case qui n'existe pas. Si tu déclares [5] mais boucles jusqu'à i < 4, tu n'analyses que 4 cases sur 5 et ta somme sera incomplète.`,
+                keyPoint: `Un seul nombre à retenir et à écrire partout : la taille du tableau. Dans les crochets de la déclaration ET dans la condition de la boucle.`,
+              },
+            },
+          },
+
+          /* ── E2b : Taille trop grande ─────────────────────────── */
+          {
+            id: 'eq1-size-too-large',
+            errorProfile: 'taille-surestimee',
+            title: 'Taille déclarée trop grande',
+            detect: (c) => {
+              const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/)
+              return m != null && parseInt(m[1]) > 5
+            },
+            message: `Tu as déclaré une taille supérieure à 5 pour stocker 5 valeurs. En C, les cases non initialisées ne valent pas 0 — elles contiennent une valeur aléatoire héritée de la mémoire. "Prévoir grand" n'est pas une sécurité.`,
+            analogy: `C'est comme réserver 6 casiers pour 5 affaires. Le 6ème casier n'est pas vide — il contient ce que laissé le locataire précédent. Si tu l'ouvres par erreur, tu trouves n'importe quoi.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais déclaré une taille trop grande — les cases vides contiennent des valeurs imprévisibles.` },
+                intro: `Tu avais déclaré points avec une taille supérieure à 5 pour stocker 5 valeurs. Le programme a réservé plus de cases que nécessaire. Les cases supplémentaires existent bien en mémoire, mais leur contenu est imprévisible : c'est ce qui traînait dans cette zone avant que ton programme démarre. Accéder à ces cases donnera un résultat faux — et le compilateur ne te préviendra pas.`,
+                keyPoint: `En C, une case non initialisée ne vaut pas 0 — elle contient une valeur aléatoire héritée de la mémoire. "Prévoir grand" n'est pas une sécurité, c'est une source de bugs silencieux.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-size-too-large',
+                    label: 'Visualisation — la case fantôme',
+                    type: 'animation',
+                    component: AnimSizeTooLarge,
+                  },
+                ],
+              },
+              remplir: {
+                reminder: { text: `Rappel : la taille déclarée est un contrat exact — pas un maximum.` },
+                intro: `Quand tu remplis avec scanf dans une boucle, si la boucle tourne moins de fois que la taille déclarée, les cases restantes garderont des valeurs aléatoires. La taille déclarée doit correspondre exactement au nombre de saisies attendues. Ce n'est pas un maximum à ne pas dépasser — c'est une valeur exacte.`,
+                keyPoint: `La taille déclarée n'est pas un maximum — c'est un contrat exact. Tu déclares ce dont tu as besoin, pas plus.`,
+              },
+              recherche: {
+                reminder: { text: `Rappel : parcourir au-delà de tes données réelles inclut des valeurs aléatoires dans tes calculs.` },
+                intro: `Si tu cherches le minimum dans un tableau de taille 6 où seules 5 cases sont remplies, et que ta boucle va jusqu'à i < 6, elle lira la case [5] qui contient une valeur aléatoire. Si cette valeur est très petite, elle deviendra le "minimum" de ton tableau — un résultat complètement faux.`,
+                keyPoint: `Une case non initialisée dans un calcul de min ou de moyenne peut fausser l'intégralité du résultat. La précision de la taille est une question de fiabilité des calculs.`,
+              },
+              parcours: {
+                reminder: { text: `Rappel : ne jamais boucler au-delà du nombre de valeurs réelles dans le tableau.` },
+                intro: `La condition i < N délimite exactement quelles cases tu analyses. Si N est supérieur au nombre de valeurs réelles, tu inclus des cases fantômes dans ta somme et ta moyenne. Avec points[6] et 5 valeurs réelles, si tu boucles jusqu'à i < 6, tu additionnes 5 vraies valeurs + 1 valeur aléatoire. Résultat garanti faux.`,
+                keyPoint: `La taille du tableau et la condition de boucle doivent être identiques. Aucune case fantôme, aucune case oubliée.`,
+              },
+            },
+          },
+
+          /* ── E3 : Mauvais indice (confusion base-1) ──────────── */
+          {
+            id: 'eq1-wrong-index',
+            errorProfile: 'confusion-base-1',
+            title: 'Mauvais indice — 3ème case ≠ indice 3',
+            detect: (c) => {
+              const m = c.match(/printf\s*\([^)]*points\s*\[\s*(\d+)\s*\]/)
+              return m != null && parseInt(m[1]) !== 2
+            },
+            message: `Tu as accédé à la mauvaise case. En C, le 3ème élément est à l'indice 2, pas 3. Le comptage commence toujours à 0 : 1er = [0], 2ème = [1], 3ème = [2]. La règle : indice = position - 1.`,
+            analogy: `Pense à l'ascenseur : le rez-de-chaussée est le niveau 0. Quand tu veux le "3ème étage", tu appuies sur le bouton 2. Avec les tableaux C, c'est exactement pareil.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais utilisé un indice décalé de 1 — rappel sur le comptage à partir de 0 en C.` },
+                intro: `Tu avais écrit points[3] pour afficher le 3ème match. C'est l'erreur la plus naturelle du monde — dans la vie quotidienne, le 3ème objet a le numéro 3. Mais en C, le comptage commence à 0. Pense à l'ascenseur : le rez-de-chaussée est le niveau 0, le 1er étage le niveau 1, le 2ème étage le niveau 2. Quand tu veux le "3ème étage", tu appuies sur le bouton 2. Avec les tableaux C, c'est exactement pareil : la 3ème case porte le numéro 2.`,
+                keyPoint: `Formule à retenir une fois pour toutes — indice = position - 1. La 1ère case = indice 0. La 3ème case = indice 2. La 5ème case = indice 4. Chaque fois que tu te demandes "quel indice ?", prends ta position et soustrais 1.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-wrong-index',
+                    label: 'Visualisation — quel indice pour le 3ème match ?',
+                    type: 'animation',
+                    component: AnimWrongIndex,
+                  },
+                ],
+              },
+              remplir: {
+                reminder: { text: `Rappel : dans la boucle, i commence à 0. La 3ème saisie va dans points[2], pas points[3].` },
+                intro: `Dans la boucle de saisie, i commence à 0. La 1ère valeur tapée va dans points[0], la 2ème dans points[1], la 3ème dans points[2]. Pour afficher "Entrez la valeur numéro 1", tu écris i + 1 dans le printf — parce que l'indice i et le numéro affiché à l'utilisateur ne sont pas la même chose. L'utilisateur voit 1, 2, 3... Le tableau stocke à 0, 1, 2...`,
+                keyPoint: `Dans tes boucles, i est l'indice du tableau (commence à 0). Si tu veux afficher un numéro humain (1, 2, 3...), tu affiches i + 1. Les deux coexistent, ne les confonds pas.`,
+              },
+              recherche: {
+                reminder: { text: `Rappel : "commencer à la 2ème case" = i = 1. Chaque position traduit en indice = position - 1.` },
+                intro: `La boucle de recherche commence à i = 1 — pas i = 0. Pourquoi ? Parce que points[0] est déjà utilisé comme valeur de départ pour min. On compare depuis la 2ème case, qui est l'indice 1. Si tu avais écrit i = 2 par réflexe, tu aurais sauté la 2ème case — et le minimum pourrait s'y trouver.`,
+                keyPoint: `"Commencer à la 2ème case" = i = 1. Chaque fois que tu lis "commence à la Nème case", traduis : indice = N - 1. La boucle commence à i = 1 car l'indice 0 est déjà utilisé comme référence.`,
+              },
+              parcours: {
+                reminder: { text: `Rappel : dernière case d'un tableau de taille 5 = indice 4, jamais 5.` },
+                intro: `La condition i < 5 fait tourner la boucle 5 fois : i vaut 0, 1, 2, 3, puis 4. Ces 5 valeurs correspondent exactement aux 5 cases. La dernière case, la 5ème, est à l'indice 4 — pas 5. Si tu écrivais i <= 5 par réflexe, tu tenterais d'accéder à points[5] qui n'existe pas.`,
+                keyPoint: `Pour un tableau de taille 5, les indices valides sont 0, 1, 2, 3, 4. Jamais 5. La condition i < 5 s'arrête exactement au bon moment — i atteint 4 et la boucle s'arrête avant d'aller à 5.`,
+              },
+            },
+          },
+
+        ],
+
         answer: `#include <stdio.h>
 
 int main() {

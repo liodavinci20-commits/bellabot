@@ -112,11 +112,243 @@ int main() {
           `int resultats[10]; — sans accolades, les cases existent mais leurs valeurs sont indéterminées.`,
           `Le printf est déjà écrit dans le starter — tu n'as qu'à déclarer les deux tableaux au-dessus.`,
         ],
-        test: (code) =>
-          /int\s+scores\s*\[6\]/.test(code) &&
-          /45.*32.*67.*28.*55.*41/.test(code.replace(/\s/g, '')) &&
-          /int\s+resultats\s*\[10\]/.test(code) &&
-          /printf/.test(code),
+        validation: [
+          {
+            id: 'scores-decl',
+            test: (c) => /int\s+scores\s*\[\s*6\s*\]/i.test(c),
+            success: 'Étape 1a ✓ — tableau "scores" déclaré avec la bonne taille [6].',
+            error: 'Déclare : int scores[6] = {45, 32, 67, 28, 55, 41}; — exactement 6 cases pour 6 valeurs.',
+          },
+          {
+            id: 'scores-init',
+            test: (c) => /\{\s*45\s*,\s*32\s*,\s*67\s*,\s*28\s*,\s*55\s*,\s*41\s*\}/.test(c),
+            success: 'Étape 1b ✓ — les 6 valeurs sont dans le bon ordre.',
+            error: 'Les valeurs doivent être dans cet ordre exact : {45, 32, 67, 28, 55, 41}',
+          },
+          {
+            id: 'resultats-decl',
+            test: (c) => /int\s+resultats\s*\[\s*10\s*\]/i.test(c),
+            success: 'Étape 1c ✓ — tableau "resultats" de 10 cases vides déclaré.',
+            error: 'Déclare : int resultats[10]; — 10 cases vides, sans valeurs initiales.',
+          },
+        ],
+
+        errorPatterns: [
+
+          /* ── E1 : scores sans crochets ────────────────────────── */
+          {
+            id: 'eq1-scores-no-brackets',
+            errorProfile: 'tableau-variable-simple',
+            title: 'Étape 1 — "scores" déclaré sans crochets de taille',
+            detect: (c) => /int\s+scores\b/.test(c) && !/int\s+scores\s*\[/.test(c),
+            message: `Tu as écrit "int scores" comme une variable simple, sans taille entre crochets. La syntaxe correcte est : int scores[6] = {...}. Les crochets [6] disent au programme "réserve 6 cases". Sans eux, aucune case n'est créée.`,
+            analogy: `Un tableau sans crochets, c'est comme demander un classeur sans préciser le nombre d'intercalaires. Le classeur n'a aucune section numérotée.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Étape 1 → Étape 2 : tu avais écrit scores sans crochets. Les crochets [6] créent les 6 cases que l'on va accéder ici.` },
+                intro: `À l'étape 1 tu avais déclaré scores sans crochets. Pour pouvoir écrire scores[0], scores[2]... à cette étape, les cases doivent exister — et elles n'existent que grâce à int scores[6]. Les crochets de la déclaration créent les cases. Les crochets de l'accès les ciblent. C'est le même symbole, deux rôles différents, dans un ordre précis.`,
+                keyPoint: `Progression Étape 1 → 2 : int scores[6] (déclaration) crée les cases [0] à [5]. scores[0], scores[2]... (accès) les ciblent. Sans [6] à l'étape 1, l'étape 2 est impossible.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'seq-no-brackets',
+                    label: 'Étape 1 sans crochets → Étape 2 impossible',
+                    code: `// ✗ Étape 1 incorrecte — sans crochets
+int scores;                    // 0 case créée
+// → Étape 2 impossible : scores[0] n'existe pas !
+
+// ✓ Étape 1 correcte — avec crochets
+int scores[6] = {45, 32, 67, 28, 55, 41};
+// → Étape 2 possible :
+//   scores[0] = 45  scores[1] = 32  scores[2] = 67
+//   scores[3] = 28  scores[4] = 55  scores[5] = 41`,
+                    type: 'bad',
+                    comment: `La déclaration avec [6] est le prérequis de toutes les étapes suivantes. Sans elle, les étapes 2 à 5 n'ont aucune case à traiter.`,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Étape 1 → Étape 3 : int scores[6] crée les 6 cases que l'on va modifier ici.` },
+                intro: `À l'étape 1 tu avais déclaré scores sans crochets. Pour modifier une case (scores[0] = 99), elle doit d'abord exister — ce qui nécessite int scores[6] à l'étape 1. La modification est l'étape 3 : elle s'appuie directement sur les 6 cases créées à l'étape 1. Chaque modification cible une case par son indice. Sans les 6 cases, aucun indice n'est valide.`,
+                keyPoint: `Étape 1 → 3 : les cases créées à l'étape 1 (int scores[6]) sont exactement celles que tu modifies à l'étape 3 (scores[i] = valeur). La taille [6] détermine lesquelles existent.`,
+              },
+              recherche: {
+                reminder: { text: `Étape 1 → Étape 4 : la recherche du max parcourt les 6 cases créées par int scores[6].` },
+                intro: `La recherche du maximum à l'étape 4 parcourt toutes les cases de scores[0] à scores[5]. Ces 6 cases existent parce que tu as déclaré int scores[6] à l'étape 1. Sans cette déclaration correcte, la boucle de recherche n'aurait aucune case à comparer.`,
+                keyPoint: `Progression Étape 1 → 4 : la déclaration [6] détermine que la boucle fait exactement 6 tours (i de 0 à 5). Taille déclarée = nombre de tours de boucle.`,
+              },
+              parcours: {
+                reminder: { text: `Étape 1 → Étape 5 : for(int i = 0; i < 6; i++) fait 6 tours — un par case déclarée à l'étape 1.` },
+                intro: `Le parcours complet à l'étape 5 utilise for(int i = 0; i < 6; i++). Ce 6 dans la condition vient directement de la taille déclarée à l'étape 1. Sans int scores[6] correct à l'étape 1, la boucle de parcours n'a pas de base correcte. Les 5 étapes sont liées : chaque étape s'appuie sur la précédente.`,
+                keyPoint: `Synthèse des 5 étapes : int scores[6] (étape 1) → scores[i] accès (étape 2) → scores[i] = val modification (étape 3) → boucle i<6 recherche (étape 4) → boucle i<6 parcours (étape 5). La taille [6] est le fil conducteur.`,
+              },
+            },
+          },
+
+          /* ── E2 : scores taille trop petite ───────────────────── */
+          {
+            id: 'eq1-scores-too-small',
+            errorProfile: 'taille-sous-estimee',
+            title: 'Étape 1 — taille de "scores" trop petite',
+            detect: (c) => {
+              const m = c.match(/int\s+scores\s*\[\s*(\d+)\s*\]/i)
+              return m !== null && parseInt(m[1]) < 6
+            },
+            message: `Tu as déclaré scores avec une taille inférieure à 6 pour stocker 6 valeurs. La taille doit correspondre exactement au nombre de valeurs. Compte les valeurs : 45, 32, 67, 28, 55, 41 → 6 valeurs → int scores[6].`,
+            analogy: `C'est comme réserver 5 pages dans un cahier pour 6 leçons. La 6ème leçon n'a nulle part où aller.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Étape 1 → Étape 2 : tu avais déclaré moins de 6 cases — rappel sur la correspondance taille/valeurs.` },
+                intro: `À l'étape 1 tu avais déclaré une taille inférieure à 6. En C, la taille détermine exactement quelles cases existent et lesquelles sont accessibles. Si tu déclares scores[5], la case [5] n'existe pas — scores[5] est hors limites. Regarde le tableau de correspondance ci-dessous pour voir l'impact.`,
+                keyPoint: `Règle Étape 1 → 2 : taille déclarée = dernier indice valide + 1. Pour accéder à la case [5] (6ème valeur), il faut int scores[6]. Avec scores[5], le dernier indice valide est [4].`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'seq-too-small',
+                    label: 'Taille trop petite — table de correspondance',
+                    code: `// ✗ Taille trop petite : 5 cases pour 6 valeurs
+// int scores[5] = {45, 32, 67, 28, 55, 41};
+//                                       ↑ la valeur 41 n'a pas de case !
+//  Cases créées :  [0]  [1]  [2]  [3]  [4]
+//  Valeur 41 → cases inexistante → comportement imprévisible
+
+// ✓ Taille exacte : 6 cases pour 6 valeurs
+// int scores[6] = {45, 32, 67, 28, 55, 41};
+//  [0]=45  [1]=32  [2]=67  [3]=28  [4]=55  [5]=41
+//  6 valeurs → 6 cases → correspondance exacte`,
+                    type: 'bad',
+                    comment: `Méthode : compte les valeurs entre accolades, puis écris ce nombre entre crochets. Ici : 45, 32, 67, 28, 55, 41 → 6 valeurs → scores[6].`,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Étape 1 → Étape 3 : avec une taille trop petite, certaines cases n'existent pas et ne peuvent pas être modifiées.` },
+                intro: `À l'étape 1 tu avais déclaré une taille trop petite. À l'étape 3, toute tentative de modifier une case inexistante (par exemple scores[5] avec une taille de 5) écrase une zone mémoire inconnue. La règle est stricte : on ne peut modifier que les cases qui ont été déclarées à l'étape 1.`,
+                keyPoint: `Indices modifiables = [0] à [taille déclarée - 1]. Avec int scores[6] : indices modifiables = [0] à [5].`,
+              },
+              recherche: {
+                reminder: { text: `Étape 1 → Étape 4 : avec une taille trop petite, la boucle de recherche oublie des valeurs.` },
+                intro: `À l'étape 4, la boucle de recherche parcourt exactement taille cases. Si tu avais déclaré scores[5] pour 6 valeurs, la valeur 41 (case [5]) n'aurait jamais été comparée. Le maximum trouvé pourrait être faux — et aucun message d'erreur ne t'aurait prévenu.`,
+                keyPoint: `Taille incorrecte → résultats incorrects. Taille exacte → la boucle couvre toutes les valeurs, aucune oubliée.`,
+              },
+              parcours: {
+                reminder: { text: `Étape 1 → Étape 5 : la somme ne serait correcte que si toutes les cases sont incluses dans la boucle.` },
+                intro: `À l'étape 5, la somme se calcule en ajoutant chaque case à un accumulateur. Si la taille déclarée est trop petite, certaines valeurs ne sont jamais additionnées. La somme sera incorrecte. La condition de boucle i < 6 doit correspondre à la taille réelle déclarée à l'étape 1.`,
+                keyPoint: `Synthèse : la taille déclarée à l'étape 1 est le même nombre qui apparaît dans i < N aux étapes 4 et 5. Un seul nombre, trois endroits.`,
+              },
+            },
+          },
+
+          /* ── E3 : scores taille trop grande ───────────────────── */
+          {
+            id: 'eq1-scores-too-large',
+            errorProfile: 'taille-surestimee',
+            title: 'Étape 1 — taille de "scores" trop grande',
+            detect: (c) => {
+              const m = c.match(/int\s+scores\s*\[\s*(\d+)\s*\]/i)
+              return m !== null && parseInt(m[1]) > 6
+            },
+            message: `Tu as déclaré scores avec une taille supérieure à 6 pour stocker 6 valeurs. En C, les cases non initialisées ne contiennent pas 0 — elles contiennent une valeur imprévisible. La taille doit être exactement 6.`,
+            analogy: `C'est comme réserver 7 pages dans un cahier pour 6 leçons. La 7ème page existe, mais son contenu est imprévisible — elle n'est pas vide.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Étape 1 → Étape 2 : tu avais déclaré plus de 6 cases. Les cases supplémentaires ont des valeurs imprévisibles.` },
+                intro: `À l'étape 1 tu avais déclaré une taille supérieure à 6. Les cases supplémentaires existent bien en mémoire, mais elles ne contiennent pas 0 — elles contiennent ce qui traînait dans cette zone mémoire avant ton programme. Accéder à scores[6] ou scores[7] à l'étape 2 donnera une valeur imprévisible.`,
+                keyPoint: `Règle Étape 1 → 2 : ne jamais accéder à une case au-delà des valeurs réellement initialisées. La taille exacte garantit qu'aucune case fantôme n'est accessible.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'seq-too-large',
+                    label: 'Taille trop grande — table des cases réelles vs fantômes',
+                    code: `// ✗ Taille trop grande : 7 cases pour 6 valeurs
+// int scores[7] = {45, 32, 67, 28, 55, 41};
+//  [0]=45  [1]=32  [2]=67  [3]=28  [4]=55  [5]=41  [6]=???
+//                                                      ↑
+//                                           valeur imprévisible
+
+// ✓ Taille exacte : 6 cases pour 6 valeurs
+// int scores[6] = {45, 32, 67, 28, 55, 41};
+//  [0]=45  [1]=32  [2]=67  [3]=28  [4]=55  [5]=41
+//  toutes les cases ont une valeur définie`,
+                    type: 'bad',
+                    comment: `Taille exacte = aucune case fantôme. Chaque case a une valeur connue et définie.`,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Étape 1 → Étape 3 : les cases fantômes (au-delà de [5]) ne doivent pas être modifiées.` },
+                intro: `Avec une taille trop grande, il existe des cases fantômes au-delà des 6 valeurs réelles. Modifier une case fantôme à l'étape 3 écrase une zone mémoire inconnue. La règle est de ne modifier que les cases initialisées à l'étape 1, c'est-à-dire [0] à [5].`,
+                keyPoint: `Cases sûres à modifier = [0] à [nombre de valeurs - 1] = [0] à [5] pour 6 valeurs.`,
+              },
+              recherche: {
+                reminder: { text: `Étape 1 → Étape 4 : la boucle de recherche doit s'arrêter à i < 6, pas à i < taille déclarée si elle est trop grande.` },
+                intro: `Si la boucle de recherche fait i < 7 pour un tableau de 6 valeurs réelles, elle comparera la case [6] — la case fantôme. Sa valeur imprévisible pourrait devenir le "maximum" ou le "minimum" du tableau. Le résultat serait faux. La condition de boucle doit correspondre au nombre réel de valeurs.`,
+                keyPoint: `Condition de boucle = nombre de valeurs réelles, pas taille déclarée si elle est trop grande. Pour 6 valeurs : i < 6.`,
+              },
+              parcours: {
+                reminder: { text: `Étape 1 → Étape 5 : la somme ne doit additionner que les 6 valeurs réelles, pas les cases fantômes.` },
+                intro: `À l'étape 5, si la boucle fait i < 7, elle additionne la case fantôme [6] dont la valeur est imprévisible. La somme et la moyenne seront fausses. La condition i < 6 (nombre de valeurs réelles) est la seule correcte.`,
+                keyPoint: `Somme correcte = boucle sur les valeurs réelles uniquement. La taille exacte à l'étape 1 garantit que toutes les conditions de boucle aux étapes 4 et 5 sont correctes.`,
+              },
+            },
+          },
+
+          /* ── E4 : resultats mauvaise taille ───────────────────── */
+          {
+            id: 'eq1-resultats-wrong-size',
+            errorProfile: 'confusion-taille-tableau',
+            title: 'Étape 1 — taille de "resultats" incorrecte',
+            detect: (c) => {
+              const m = c.match(/int\s+resultats\s*\[\s*(\d+)\s*\]/i)
+              return m !== null && parseInt(m[1]) !== 10
+            },
+            message: `Tu as déclaré resultats avec une taille différente de 10. L'énoncé demande exactement 10 cases. Vérifie la consigne : "un tableau vide de 10 entiers nommé resultats" → int resultats[10];`,
+            analogy: `C'est comme commander un cahier de la mauvaise taille. La taille doit correspondre exactement au besoin prévu.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Étape 1 → Étape 2 : la taille d'un tableau doit correspondre exactement au besoin — ni estimée, ni approximée.` },
+                intro: `Tu avais déclaré resultats avec une taille incorrecte. Cela illustre une règle fondamentale de l'étape 1 : la taille d'un tableau est un contrat exact. Elle doit correspondre précisément au nombre de cases dont le programme a besoin — pas une approximation, pas "prévoir large". Pour scores tu avais 6 valeurs → [6]. Pour resultats tu as besoin de 10 cases → [10].`,
+                keyPoint: `Étape 1 — règle de la taille : taille = besoin exact. Lis l'énoncé, identifie le nombre précis de cases, écris ce nombre entre crochets.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'seq-two-arrays',
+                    label: 'Deux tableaux, deux tailles différentes',
+                    code: `// Étape 1 — deux déclarations avec deux tailles différentes
+
+// Tableau 1 : 6 valeurs connues → taille exacte = 6
+int scores[6] = {45, 32, 67, 28, 55, 41};
+//          ↑ taille = nombre de valeurs
+
+// Tableau 2 : 10 cases vides prévues → taille exacte = 10
+int resultats[10];
+//            ↑ taille = nombre de cases prévues par l'énoncé
+
+// Règle : lire l'énoncé → identifier la taille → écrire ce nombre`,
+                    type: 'good',
+                    comment: `Chaque tableau a sa propre taille. scores[6] et resultats[10] sont deux déclarations indépendantes — ne pas les confondre.`,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Étape 1 → Étape 3 : chaque tableau a sa propre taille — modification dans les limites de la taille déclarée.` },
+                intro: `À l'étape 3, pour modifier une case de resultats, il faut que cette case existe — ce qui dépend de la taille déclarée à l'étape 1. Avec int resultats[10], les cases valides sont [0] à [9]. Avec une taille incorrecte, certaines cases seraient inaccessibles ou fantômes.`,
+                keyPoint: `Modification valide = indice dans [0, taille-1]. Pour resultats[10] : indices valides = [0] à [9].`,
+              },
+              recherche: {
+                reminder: { text: `Étape 1 → Étape 4 : la boucle de recherche sur resultats devra faire i < 10 — correspondant à la taille déclarée.` },
+                intro: `Quand tu chercheras le max ou le min dans resultats à l'étape 4, ta boucle devra faire i < 10. Ce 10 vient directement de la taille déclarée à l'étape 1. Si la taille était incorrecte, la boucle chercherait dans trop peu ou trop de cases.`,
+                keyPoint: `Taille à l'étape 1 = condition de boucle aux étapes 4 et 5. Taille exacte = résultats corrects.`,
+              },
+              parcours: {
+                reminder: { text: `Étape 1 → Étape 5 : la somme de resultats s'effectuera avec for(i = 0; i < 10; i++) — correspondant à la taille déclarée.` },
+                intro: `Le parcours de resultats à l'étape 5 utilisera la condition i < 10 — exactement la taille que tu as déclarée à l'étape 1. Les 5 étapes sont un enchaînement : la taille de l'étape 1 se répercute dans les conditions de boucle des étapes 4 et 5. Déclarer la bonne taille au départ garantit que tout le reste est cohérent.`,
+                keyPoint: `Les 5 étapes forment une chaîne : la taille déclarée à l'étape 1 est le fondement de tout ce qui suit. Une taille incorrecte au départ compromet toutes les étapes suivantes.`,
+              },
+            },
+          },
+
+        ],
       },
     },
 

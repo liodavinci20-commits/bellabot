@@ -42,7 +42,7 @@ export default function CodeBlock({ label, code, type = 'neutral', comment }) {
       .replace(/(["'].*?["'])/g, '<span class="text-amber-300">$1</span>')
       .replace(/\b(for|in|if|else|elif|while|def|return|import|from|True|False|None|and|or|not|print|len|sum|enumerate|append|range)\b/g,
         '<span class="text-blue-400 font-medium">$1</span>')
-      .replace(/\b(\d+\.?\d*)\b/g, '<span class="text-emerald-400">$1</span>')
+      .replace(/(?<!-)\b(\d+\.?\d*)\b/g, '<span class="text-emerald-400">$1</span>')
 
     return <span dangerouslySetInnerHTML={{ __html: result }} />
   }

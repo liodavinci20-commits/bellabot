@@ -91,7 +91,7 @@ function DiagnosticPanel({ detectedError }) {
 }
 
 /* ─── Éditeur de pratique principal ─── */
-export default function PracticeEditor({ exercise, onFirstPass }) {
+export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptation }) {
   const [code, setCode]             = useState(exercise.starter ?? '')
   const [results, setResults]       = useState(null)   // null | check[]
   const [validated, setValidated]   = useState(false)
@@ -134,6 +134,15 @@ export default function PracticeEditor({ exercise, onFirstPass }) {
         setDetectedError({ pattern: matched, isSecondOccurrence })
         if (!isSecondOccurrence) {
           setShownErrorIds((prev) => new Set([...prev, matched.id]))
+          if (matched.adaptedSteps || matched.adaptedContent) {
+            onErrorAdaptation?.({
+              errorId:        matched.id,
+              errorTitle:     matched.title,
+              errorProfile:   matched.errorProfile,
+              adaptedSteps:   matched.adaptedSteps,
+              adaptedContent: matched.adaptedContent,
+            })
+          }
         }
       } else {
         setDetectedError(null)

@@ -11,16 +11,58 @@ import {
   HiOutlineCode,
   HiOutlineX,
   HiOutlineLockClosed,
+  HiOutlineAdjustments,
+  HiOutlineExclamation,
 } from 'react-icons/hi'
 import { getLessonByProfile } from '../data/lessons/index'
 import { useAuth } from '../hooks/useAuth'
 import CodeBlock from '../components/learning/CodeBlock'
+import AnimationBlock from '../components/learning/AnimationBlock'
 import PracticeEditor from '../components/learning/PracticeEditor'
 import ChatPanel from '../components/learning/ChatPanel'
 import { Illustration } from '../components/learning/Illustrations'
 
+/* ─── Banner d'adaptation pédagogique ─── */
+function AdaptationBanner({ adaptation, profileLabel, onDismiss }) {
+  if (!adaptation) return null
+  return (
+    <div className="rounded-2xl border border-violet-500/30 bg-violet-500/[0.07] overflow-hidden">
+      <div className="flex items-start gap-3 px-5 py-4">
+        <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0 mt-0.5">
+          <HiOutlineAdjustments className="w-4 h-4 text-violet-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-violet-300 mb-1">
+            Leçon adaptée pour toi
+          </p>
+          <p className="text-xs text-violet-200/60 leading-relaxed">
+            J'ai détecté une difficulté sur <span className="text-violet-300 font-medium">"{adaptation.errorTitle}"</span>.
+            La suite de cette leçon a été ajustée pour ton style{' '}
+            <span className="text-violet-300 font-medium">[{profileLabel}]</span>.
+          </p>
+        </div>
+        {onDismiss && (
+          <button
+            onClick={onDismiss}
+            className="text-violet-400/40 hover:text-violet-400/80 transition-colors shrink-0"
+          >
+            <HiOutlineX className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ─── Contenu d'une étape ─── */
-function StepContent({ step, profileId }) {
+function StepContent({ step, profileId, adaptedStep }) {
+  const introText        = adaptedStep?.intro        ?? step.intro?.text
+  const keyPointText     = adaptedStep?.keyPoint     ?? step.keyPoint
+  const illustrationType = adaptedStep?.illustration ?? step.illustration
+
+  const blocksBeforeOriginal = adaptedStep?.extraCodeBlocks?.filter((b) => b.position === 'before') ?? []
+  const blocksAfterOriginal  = adaptedStep?.extraCodeBlocks?.filter((b) => b.position === 'after')  ?? []
+
   return (
     <div className="space-y-6">
 
@@ -43,19 +85,38 @@ function StepContent({ step, profileId }) {
         )}
       </div>
 
-      {/* Intro */}
-      {step.intro && (
-        <p className="text-white/60 text-sm leading-relaxed">{step.intro.text}</p>
-      )}
-
-      {/* Illustration */}
-      {step.illustration && (
-        <div className="rounded-2xl border border-white/6 bg-white/[0.015] p-4">
-          <Illustration type={step.illustration} profile={profileId} />
+      {/* Rappel d'erreur — visible uniquement si cette étape a été adaptée */}
+      {adaptedStep?.reminder && (
+        <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl
+          bg-amber-500/8 border border-amber-500/20">
+          <HiOutlineExclamation className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+          <p className="text-xs text-amber-300/80 leading-relaxed">
+            <span className="font-semibold text-amber-400">Rappel · </span>
+            {adaptedStep.reminder.text}
+          </p>
         </div>
       )}
 
-      {/* Blocs de code */}
+      {/* Intro — adaptée si erreur détectée, sinon originale */}
+      {introText && (
+        <p className="text-white/60 text-sm leading-relaxed">{introText}</p>
+      )}
+
+      {/* Illustration */}
+      {illustrationType && (
+        <div className="rounded-2xl border border-white/6 bg-white/[0.015] p-4">
+          <Illustration type={illustrationType} profile={profileId} />
+        </div>
+      )}
+
+      {/* Blocs supplémentaires AVANT les blocs originaux */}
+      {blocksBeforeOriginal.map((block) =>
+        block.type === 'animation'
+          ? <AnimationBlock key={block.id} label={block.label} Component={block.component} />
+          : <CodeBlock key={block.id} label={block.label} code={block.code} type={block.type} comment={block.comment} />
+      )}
+
+      {/* Blocs de code originaux */}
       {step.codeBlocks?.map((block) => (
         <CodeBlock
           key={block.id}
@@ -66,14 +127,28 @@ function StepContent({ step, profileId }) {
         />
       ))}
 
-      {/* Point clé */}
-      {step.keyPoint && (
-        <div className="flex items-start gap-3 px-4 py-4 rounded-xl
-          bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
-          <HiOutlineCheckCircle className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+      {/* Blocs supplémentaires APRÈS les blocs originaux */}
+      {blocksAfterOriginal.map((block) =>
+        block.type === 'animation'
+          ? <AnimationBlock key={block.id} label={block.label} Component={block.component} />
+          : <CodeBlock key={block.id} label={block.label} code={block.code} type={block.type} comment={block.comment} />
+      )}
+
+      {/* Point clé — couleur amber si adapté, bleu si original */}
+      {keyPointText && (
+        <div className={`flex items-start gap-3 px-4 py-4 rounded-xl border ${
+          adaptedStep?.keyPoint
+            ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/20'
+            : 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border-blue-500/20'
+        }`}>
+          <HiOutlineCheckCircle className={`w-5 h-5 mt-0.5 shrink-0 ${
+            adaptedStep?.keyPoint ? 'text-amber-400' : 'text-blue-400'
+          }`} />
           <div>
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">Point clé</p>
-            <p className="text-sm text-white/75 leading-relaxed">{step.keyPoint}</p>
+            <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${
+              adaptedStep?.keyPoint ? 'text-amber-400' : 'text-blue-400'
+            }`}>Point clé</p>
+            <p className="text-sm text-white/75 leading-relaxed">{keyPointText}</p>
           </div>
         </div>
       )}
@@ -132,6 +207,8 @@ export default function LearningPage() {
   const [showChat, setShowChat]         = useState(false)
   const [practicedSteps, setPracticedSteps] = useState(new Set())
   const [showPracticeAlert, setShowPracticeAlert] = useState(false)
+  const [adaptation, setAdaptation]     = useState(null) // { errorId, adaptedContent, errorTitle }
+  const [showAdaptBanner, setShowAdaptBanner] = useState(false)
 
   const step       = lesson.steps[currentStep]
   const isFirst    = currentStep === 0
@@ -141,6 +218,14 @@ export default function LearningPage() {
   const markPracticed = () => {
     setPracticedSteps((prev) => new Set([...prev, currentStep]))
     setShowPracticeAlert(false)
+  }
+
+  const handleErrorAdaptation = (info) => {
+    // Ne déclenche qu'une seule fois (première erreur)
+    if (!adaptation) {
+      setAdaptation(info)
+      setShowAdaptBanner(true)
+    }
   }
 
   const goNext = () => {
@@ -168,7 +253,7 @@ export default function LearningPage() {
     return (
       <div className="min-h-screen bg-[#060d1f] bg-mesh flex flex-col">
         <CompletionScreen
-          onRestart={() => { setCurrentStep(0); setCompleted(false); setPracticedSteps(new Set()) }}
+          onRestart={() => { setCurrentStep(0); setCompleted(false); setPracticedSteps(new Set()); setAdaptation(null); setShowAdaptBanner(false) }}
           onExit={() => navigate('/dashboard')}
         />
       </div>
@@ -379,8 +464,25 @@ export default function LearningPage() {
 
         {/* ── Contenu leçon ── */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-10 py-10">
-          <div className="max-w-2xl mx-auto">
-            <StepContent step={step} profileId={profile?.id} />
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Banner d'adaptation — affiché dès la première erreur */}
+            {showAdaptBanner && adaptation && (
+              <AdaptationBanner
+                adaptation={adaptation}
+                profileLabel={lesson.profile}
+                onDismiss={() => setShowAdaptBanner(false)}
+              />
+            )}
+            <StepContent
+              step={step}
+              profileId={profile?.id}
+              adaptedStep={
+                adaptation?.adaptedSteps?.[step.id] ??
+                (adaptation?.adaptedContent?.[step.id]
+                  ? { intro: adaptation.adaptedContent[step.id] }
+                  : null)
+              }
+            />
           </div>
         </div>
 
@@ -490,7 +592,7 @@ export default function LearningPage() {
             {/* Contenu éditeur */}
             <div className="flex-1 overflow-y-auto p-5">
               {step.exercise
-                ? <PracticeEditor exercise={step.exercise} onFirstPass={markPracticed} />
+                ? <PracticeEditor exercise={step.exercise} onFirstPass={markPracticed} onErrorAdaptation={handleErrorAdaptation} />
                 : (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-white/25 text-sm">Pas d'exercice pour cette étape.</p>

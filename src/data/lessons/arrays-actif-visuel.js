@@ -1,3 +1,6 @@
+import { AnimAV_BracketsPos, AnimAV_NoBrackets, AnimAV_SizeTooSmall, AnimAV_SizeTooLarge, AnimAV_OutOfBounds }
+  from '../../components/learning/animations/ActifVisuelAnimations.jsx'
+
 // ─────────────────────────────────────────────────────────────
 // Leçon : Les tableaux en C
 // Profil : Actif + Visuel
@@ -116,41 +119,181 @@ int main() {
     return 0;
 }`,
         errorPatterns: [
+
+          /* ── E1 : "=" avant les crochets ─────────────────────── */
           {
             id: 'eq1-wrong-equals-syntax',
+            errorProfile: 'syntaxe-declaration',
             detect: (c) => /int\s+points\s*=\s*\[/i.test(c),
             title: 'Syntaxe incorrecte — "=" avant les crochets',
-            message: `Tu as écrit int points = [5] mais la taille se colle directement après le nom, sans "=" entre les deux.\n\nLe "=" sert à initialiser les valeurs, pas à définir la structure.\nCorrection : int points[5]`,
-            followUp: {
-              question: `Comment déclare-t-on un tableau de 3 entiers nommé "tab" sans valeurs initiales ?`,
-              hint: `Structure : type nom[taille]; — les crochets se collent au nom, sans "=".`,
+            message: `Tu as écrit int points = [5] mais la taille se colle directement après le nom, sans "=" entre les deux. Le "=" sert uniquement à initialiser les valeurs, pas à définir la structure. Correction : int points[5]`,
+            analogy: `En C on dit "tableau-à-5-cases" en collant [5] au nom — comme on écrit "boîte5" sans espace. Le = n'appartient pas à la structure, seulement aux valeurs.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais mis "=" avant les crochets — rappel sur la position des crochets dans la syntaxe.` },
+                intro: `Tu avais écrit int points = [5]. L'erreur était sur la position du "=" : en C, les crochets de taille se collent directement au nom du tableau, pas après le signe égal. Cette règle est la même partout — que ce soit dans la déclaration ou dans l'accès. Quand tu écris points[2] pour accéder à la case, tu vois les crochets collés à "points". C'est exactement la même syntaxe que dans la déclaration int points[5].`,
+                keyPoint: `En C, les crochets se collent TOUJOURS au nom. int points[5] pour la déclaration, points[2] pour l'accès. Le "=" n'est jamais entre le nom et les crochets.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-brackets-pos',
+                    label: 'Visualisation — position des crochets',
+                    type: 'animation',
+                    component: AnimAV_BracketsPos,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Rappel : crochets collés au nom, que ce soit pour déclarer ou pour modifier.` },
+                intro: `La règle des crochets collés au nom s'applique aussi aux modifications. Quand tu écris points[1] = 20, les crochets sont collés à "points" — exactement comme dans la déclaration. Le schéma avant/après montre bien ça : la flèche qui modifie une case utilise toujours la syntaxe nom[indice], jamais nom = [indice].`,
+                keyPoint: `Déclaration, accès, modification : les crochets sont toujours collés au nom du tableau. C'est la règle unique à retenir.`,
+              },
+              boucle: {
+                reminder: { text: `Rappel : dans la boucle, notes[i] — crochets collés au nom, i est l'indice.` },
+                intro: `Dans la boucle for, la variable i prend la place de l'indice entre crochets : notes[i]. Les crochets sont toujours collés à "notes" — la règle ne change pas. Ce qui change, c'est que l'indice est maintenant une variable (i) au lieu d'un nombre fixe (2, 4...). La flèche se déplace automatiquement à chaque tour de boucle.`,
+                keyPoint: `notes[i] dans la boucle = même syntaxe que notes[2] dans un accès direct. L'indice peut être un nombre ou une variable — les crochets restent collés au nom.`,
+              },
+              calculs: {
+                reminder: { text: `Rappel : somme += notes[i] — les crochets de notes[i] suivent la même règle syntaxique partout.` },
+                intro: `Dans les calculs, tu vas voir somme += notes[i]. Cette expression utilise notes[i] — crochets collés au nom, comme toujours. L'accumulateur lit la valeur de chaque case à tour de rôle. Visualise la flèche qui avance de case en case et verse son contenu dans "somme".`,
+                keyPoint: `Trois règles : 1) somme commence à 0 ; 2) divise par 5.0 pour la moyenne ; 3) initialise min/max avec notes[0], pas avec 0.`,
+              },
             },
-            analogy: `En français on dit "une boîte à 5 compartiments" — pas "une boîte = 5 compartiments". En C c'est pareil : int tab[5] pas int tab = [5]. Les crochets se collent directement au nom du tableau.`,
           },
+
+          /* ── E2 : Tableau sans crochets ──────────────────────── */
           {
             id: 'eq1-missing-brackets',
+            errorProfile: 'tableau-variable-simple',
             detect: (c) => /int\s+points(?!\s*\[)/i.test(c),
             title: 'Déclaration incorrecte — il manque les crochets []',
-            message: `Tu as déclaré "int points" comme une variable simple. Un tableau nécessite des crochets avec sa taille pour réserver plusieurs cases.\n\nCorrection : int points[5] — les [5] signifient "réserve 5 cases entières en mémoire".`,
-            followUp: {
-              question: `Modifie ton code pour déclarer un tableau de 3 entiers. Combien de valeurs peut-on stocker dans tab[8] ?`,
-              hint: `int tab[3]; — le chiffre entre crochets = le nombre de cases. tab[8] peut stocker 8 valeurs, aux indices [0] à [7].`,
+            message: `Tu as déclaré "int points" comme une variable simple. Un tableau nécessite des crochets avec sa taille pour réserver plusieurs cases. Correction : int points[5] — les [5] signifient "réserve 5 cases en mémoire".`,
+            analogy: `Imagine un vestiaire. "int tab" c'est un seul casier. "int tab[5]" c'est une rangée de 5 casiers numérotés [0] à [4]. Les crochets créent la rangée de cases.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais écrit int points sans crochets — voici pourquoi les crochets créent les cases que la flèche peut cibler.` },
+                intro: `Tu avais écrit int points sans crochets — comme si tu voulais une seule case. Maintenant que tu sais que les crochets créent plusieurs cases, regarde comment la flèche d'accès fonctionne. Chaque case créée par int points[5] possède une adresse numérotée. La flèche points[i] pointe exactement sur la case numéro i. Sans les crochets à la déclaration, ces cases n'existent pas — la flèche n'a nulle part où pointer.`,
+                keyPoint: `Sans [5] dans la déclaration, il n'y a pas de cases numérotées — la flèche d'accès points[i] n'a rien à cibler. Les crochets dans la déclaration créent les cases. Les crochets dans l'accès ciblent une case précise.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-no-brackets',
+                    label: 'Visualisation — sans crochets vs avec crochets',
+                    type: 'animation',
+                    component: AnimAV_NoBrackets,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Rappel : c'est grâce aux crochets [5] que les 5 cases existent — chaque modification cible une case précise.` },
+                intro: `Tu as compris que int points[5] crée 5 cases numérotées. Dans cette étape, tu vas voir qu'on peut modifier chaque case séparément — comme ouvrir un casier précis pour changer ce qu'il contient. Le schéma avant/après montre exactement ça : la flèche pointe sur une case, écrase la valeur, et les autres cases restent intactes.`,
+                keyPoint: `Pour modifier une case : nom[indice] = nouvelle_valeur. La flèche cible une seule case, les autres ne bougent pas. Lis le schéma avant/après pour identifier quelle case a changé.`,
+              },
+              boucle: {
+                reminder: { text: `Rappel : la boucle déplace la flèche automatiquement — une case à la fois parmi les 5 créées par [5].` },
+                intro: `Maintenant que tu maîtrises la déclaration et l'accès, la boucle for va automatiser ce que tu faisais à la main — pointer sur chaque case une par une. La variable i joue le rôle de l'indice entre crochets : i = 0 → flèche sur [0], i = 1 → flèche sur [1], et ainsi de suite. Si tu n'avais pas mis [5] dans la déclaration, la boucle n'aurait aucune case sur laquelle se déplacer.`,
+                keyPoint: `La boucle = flèche automatique. Elle part de [0] et avance jusqu'à [taille-1]. La condition i < 5 garantit que la flèche ne sort jamais des 5 cases créées par int points[5].`,
+              },
+              calculs: {
+                reminder: { text: `Rappel : l'accumulateur visite chaque case grâce aux indices [0] à [4] — ces cases existent parce que tu as écrit [5].` },
+                intro: `Tu connais maintenant la structure complète d'un tableau. Dans cette étape, on va parcourir toutes les cases une par une pour les additionner. Visualise l'accumulateur comme un compteur qui grossit à chaque case visitée — la flèche avance de [0] à [4] et verse le contenu de chaque case dans "somme".`,
+                keyPoint: `L'accumulateur commence à 0 AVANT la boucle, pas dedans. Chaque tour de boucle ajoute une case au total. Visualise la flèche qui avance et verse.`,
+              },
             },
-            analogy: `Imagine un vestiaire. "int tab" c'est un seul casier. "int tab[5]" c'est une rangée de 5 casiers numérotés de [0] à [4]. Les crochets définissent le nombre de casiers côte à côte.`,
           },
+
+          /* ── E3a : Taille trop petite ─────────────────────────── */
           {
-            id: 'eq1-wrong-size',
-            detect: (c) => { const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/i); return m !== null && m[1] !== '5' },
-            title: 'Mauvaise taille — confusion taille / dernier indice',
-            message: `Tu as utilisé les crochets, mais avec la mauvaise taille. Le schéma montre 5 cases ([0] à [4]), donc la taille doit être 5.\n\nRappel : taille = nombre de cases, pas le numéro du dernier indice. Pour 5 cases → int points[5].`,
-            followUp: {
-              question: `Déclare un tableau de 3 éléments nommé "tab". Quel est le dernier indice valide ?`,
-              hint: `int tab[3]; — indices valides : [0], [1], [2]. Dernier indice = taille - 1 = 2.`,
+            id: 'eq1-size-too-small',
+            errorProfile: 'taille-sous-estimee',
+            detect: (c) => {
+              const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/i)
+              return m !== null && parseInt(m[1]) < 5
             },
-            analogy: `La taille d'un tableau, c'est le nombre de pages d'un cahier. Un cahier de 5 pages : pages numérotées [0] à [4] en C. Commander un cahier de 4 pages pour noter 5 choses — la 5ème n'a nulle part où aller.`,
+            title: 'Taille trop petite — le schéma a 5 cases',
+            message: `Tu as déclaré une taille inférieure à 5 mais le schéma montre 5 cases. La taille doit correspondre exactement au nombre de cases dans le schéma. Avec une taille trop petite, la dernière valeur n'a nulle part où aller.`,
+            analogy: `C'est comme commander une boîte de 4 cases pour un schéma qui en montre 5. La 5ème case du schéma n'existe pas en mémoire — et le C ne te prévient pas.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais déclaré moins de 5 cases — rappel sur la correspondance taille/schéma.` },
+                intro: `Tu avais déclaré une taille inférieure à 5 alors que le schéma montre 5 cases. En C, la taille détermine exactement combien de cases existent en mémoire — et donc sur lesquelles la flèche peut pointer. Si tu déclares [4], la flèche ne peut pointer que sur [0] à [3]. La case [4] du schéma n'existe pas.`,
+                keyPoint: `Taille déclarée = nombre exact de cases dans le schéma. Pour le schéma à 5 cases : int points[5]. La flèche d'accès ne peut cibler que des cases qui ont été déclarées.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-size-too-small',
+                    label: 'Visualisation — taille trop petite',
+                    type: 'animation',
+                    component: AnimAV_SizeTooSmall,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Rappel : on ne peut modifier que les cases qui existent — la taille détermine lesquelles.` },
+                intro: `Le schéma avant/après montre toujours 5 cases. Pour pouvoir modifier la case [4], elle doit exister — ce qui nécessite une déclaration de taille 5. Avec une taille trop petite, tenter de modifier points[4] pointe en dehors du tableau.`,
+                keyPoint: `Avant de modifier une case, vérifie que son indice est dans les limites déclarées. Pour int points[5] : indices modifiables = [0] à [4].`,
+              },
+              boucle: {
+                reminder: { text: `Rappel : la boucle tourne taille fois — si la taille est trop petite, certaines cases ne sont jamais visitées.` },
+                intro: `La boucle for(int i = 0; i < taille; i++) fait autant de tours que la taille déclarée. Si tu déclares [4] mais que le tableau a 5 valeurs, la boucle ne verra jamais la 5ème. La flèche s'arrête à [3] et ne va pas jusqu'à [4].`,
+                keyPoint: `La condition i < N de la boucle doit correspondre à la taille réelle déclarée. Taille trop petite = cases oubliées dans le parcours.`,
+              },
+              calculs: {
+                reminder: { text: `Rappel : l'accumulateur ne compte que les cases déclarées — une taille trop petite fausse la somme.` },
+                intro: `La somme est calculée en visitant chaque case de [0] à [taille-1]. Si la taille est trop petite, certaines valeurs du schéma ne sont jamais additionnées. Le résultat sera faux — et aucun message d'erreur ne te préviendra.`,
+                keyPoint: `Taille correcte = somme correcte. Visualise chaque case du schéma : chacune doit être déclarée pour être comptée.`,
+              },
+            },
           },
+
+          /* ── E3b : Taille trop grande ─────────────────────────── */
+          {
+            id: 'eq1-size-too-large',
+            errorProfile: 'taille-surestimee',
+            detect: (c) => {
+              const m = c.match(/int\s+points\s*\[\s*(\d+)\s*\]/i)
+              return m !== null && parseInt(m[1]) > 5
+            },
+            title: 'Taille trop grande — case fantôme hors schéma',
+            message: `Tu as déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent en mémoire mais contiennent des valeurs imprévisibles — pas 0.`,
+            analogy: `C'est comme réserver 6 cases dans le schéma alors qu'il n'en montre que 5. La 6ème case existe en mémoire, mais son contenu est ce que laissé là par le programme précédent.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais déclaré plus de 5 cases — les cases en trop contiennent des valeurs aléatoires, pas 0.` },
+                intro: `Tu avais déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent bien en mémoire, mais leur contenu est imprévisible. La flèche peut les cibler — mais ce qu'elle y lit est une valeur aléatoire héritée de la mémoire, pas 0. Visualise une case fantôme au bout du schéma, remplie de données inconnues.`,
+                keyPoint: `En C, les cases non initialisées ne valent pas 0. Leur valeur est imprévisible. La taille doit correspondre exactement au schéma — ni plus, ni moins.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-size-too-large',
+                    label: 'Visualisation — case fantôme',
+                    type: 'animation',
+                    component: AnimAV_SizeTooLarge,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Rappel : modifier une case fantôme ([5] ou au-delà) donne un résultat imprévisible.` },
+                intro: `Avec une taille trop grande, tu peux "modifier" une case fantôme — le C accepte l'instruction, mais tu modifies une zone mémoire qui ne t'appartient pas. Le schéma ne montre que 5 cases : déclare exactement 5.`,
+                keyPoint: `Modifie uniquement les cases qui correspondent au schéma. Taille correcte = aucune case fantôme à modifier par erreur.`,
+              },
+              boucle: {
+                reminder: { text: `Rappel : si la boucle va jusqu'à i < 6 pour un tableau de 5 valeurs réelles, elle visite une case fantôme.` },
+                intro: `Si tu déclares [6] et que ta boucle va jusqu'à i < 6, elle visitera la case [5] — la case fantôme. La flèche sort du schéma et lit une valeur aléatoire. Pour éviter ça, la condition de boucle doit correspondre au nombre réel de valeurs : i < 5.`,
+                keyPoint: `Condition de boucle = nombre de valeurs réelles dans le schéma. Pas la taille déclarée si elle est trop grande.`,
+              },
+              calculs: {
+                reminder: { text: `Rappel : une case fantôme dans la somme fausse le résultat — l'accumulateur compterait une valeur inconnue.` },
+                intro: `Si la boucle visite la case fantôme, elle additionne une valeur inconnue à la somme. Le total sera faux. Visualise l'accumulateur : il ne doit absorber que les cases du schéma, pas les cases fantômes au-delà.`,
+                keyPoint: `Taille exacte = accumulateur fiable. Chaque case visitée doit correspondre à une valeur réelle du schéma.`,
+              },
+            },
+          },
+
+          /* ── E4 : Accès hors limites ──────────────────────────── */
           {
             id: 'eq1-out-of-bounds',
+            errorProfile: 'fleche-hors-limites',
             detect: (c) => {
               const re = /points\s*\[\s*(\d+)\s*\]/gi
               let m
@@ -163,14 +306,42 @@ int main() {
               }
               return false
             },
-            title: 'Accès hors limites — case inexistante',
+            title: 'Flèche hors limites — case inexistante',
             message: `Tu accèdes à une case qui n'existe pas. Pour int points[5], les indices valides sont [0] à [4]. Un indice ≥ 5 sort du tableau — le C ne prévient pas et le résultat est imprévisible.`,
-            followUp: {
-              question: `Pour un tableau de 5 éléments, quel est le premier indice valide ? Quel est le dernier ?`,
-              hint: `Premier = toujours 0. Dernier = taille - 1 = 4. L'indice 5 n'existe pas pour un tableau de taille 5.`,
+            analogy: `Visualise 5 cases alignées. La flèche peut pointer sur [0] à [4]. Si elle va sur [5], elle sort des cases et pointe dans une zone inconnue — potentiellement une autre variable de ton programme.`,
+            adaptedSteps: {
+              acces: {
+                reminder: { text: `Tu avais envoyé la flèche sur une case inexistante — rappel sur les limites valides de la flèche.` },
+                intro: `Tu avais accédé à une case hors limites — la flèche est sortie du tableau. Pour int points[5], les seules cases qui existent sont [0], [1], [2], [3] et [4]. Tout indice ≥ 5 envoie la flèche dans une zone mémoire inconnue. Le C ne te prévient pas — le programme continue et donne un résultat imprévisible.`,
+                keyPoint: `La flèche ne peut pointer que sur des cases qui existent. Pour un tableau de taille N, les indices valides sont [0] à [N-1]. Pour points[5] : dernier indice valide = 4, jamais 5.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'anim-out-of-bounds',
+                    label: 'Visualisation — flèche hors limites',
+                    type: 'animation',
+                    component: AnimAV_OutOfBounds,
+                  },
+                ],
+              },
+              modification: {
+                reminder: { text: `Rappel : flèche sur [5] pour un tableau de taille 5 = sortie des cases du schéma.` },
+                intro: `Modifier une case hors limites — écrire dans points[5] — envoie la flèche hors du schéma. Le C exécute l'instruction et écrase une zone mémoire inconnue. Le schéma avant/après ne montre jamais une case [5] pour un tableau de taille 5 : cette case n'appartient pas à ton programme.`,
+                keyPoint: `Indices modifiables = [0] à [taille-1]. Pour int points[5] : tu peux modifier [0] à [4]. Jamais [5].`,
+              },
+              boucle: {
+                reminder: { text: `Rappel : la condition i < 5 maintient la flèche dans les limites — i <= 5 la ferait sortir.` },
+                intro: `La boucle for(int i = 0; i < 5; i++) garantit que la flèche ne sort jamais du tableau. À i = 4 (dernière case valide), le tour suivant ferait i = 5 — mais la condition i < 5 l'arrête. Si tu écrivais i <= 5, la flèche irait sur [5] qui est hors limites.`,
+                keyPoint: `i < N (strictement inférieur) = flèche reste dans les limites. i <= N = flèche sort sur la case [N] inexistante. Toujours < jamais <=.`,
+              },
+              calculs: {
+                reminder: { text: `Rappel : l'accumulateur ne doit visiter que les cases [0] à [4] — jamais au-delà.` },
+                intro: `Dans les calculs, la boucle doit rester dans les limites pour que la somme soit correcte. Si la flèche sort du tableau, l'accumulateur absorbe une valeur inconnue. Visualise la boucle : elle s'arrête exactement à i = 4 (la dernière case du schéma), puis la condition i < 5 l'empêche d'aller plus loin.`,
+                keyPoint: `Somme correcte = flèche qui reste dans les limites. Condition i < 5 = la flèche s'arrête avant la case fantôme.`,
+              },
             },
-            analogy: `Imagine 5 sièges numérotés [0] à [4] dans une rangée. Chercher le siège [5] — il n'existe pas. En mémoire, tu vas "t'asseoir" dans la zone de données suivante sans t'en rendre compte.`,
           },
+
         ],
       },
     },
