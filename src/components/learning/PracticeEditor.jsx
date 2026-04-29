@@ -258,7 +258,7 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
 
         {/* ── Éditeur de code ── */}
         {isCode && (
-          <div className="rounded-xl overflow-hidden border border-white/8 bg-[#0d1525]">
+          <div className="rounded-xl overflow-hidden border border-white/8 bg-code">
             {/* Barre éditeur */}
             <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border-b border-white/6">
               <div className="flex gap-1.5">

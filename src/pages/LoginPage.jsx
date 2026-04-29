@@ -10,6 +10,7 @@ import {
   HiOutlineAdjustments,
 } from 'react-icons/hi'
 import { useAuth } from '../hooks/useAuth'
+import ThemeToggle from '../components/ThemeToggle'
 
 /* ─── Brand Panel ─── */
 function BrandPanel() {
@@ -27,7 +28,7 @@ function BrandPanel() {
         </div>
 
         <h1 className="text-4xl font-bold text-gradient mb-4 leading-tight">
-          Bella Bot
+          AdaptativeCBot
         </h1>
         <p className="text-lg text-white/55 leading-relaxed mb-10">
           Ton assistant d'orientation pédagogique intelligent, adapté à ton profil d'apprentissage.
@@ -79,7 +80,7 @@ function LoginForm() {
           <div className="flex items-center justify-center w-10 h-10 rounded-xl glass-strong">
             <HiOutlineLightningBolt className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="text-xl font-semibold text-gradient">Bella Bot</span>
+          <span className="text-xl font-semibold text-gradient">AdaptativeCBot</span>
         </div>
 
         {/* Header */}
@@ -224,7 +225,11 @@ function LoginForm() {
 /* ─── Page ─── */
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#060d1f] bg-mesh flex">
+    <div className="min-h-screen bg-app bg-mesh flex relative">
+      {/* Toggle mode ── coin supérieur droit */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <BrandPanel />
       <LoginForm />
     </div>

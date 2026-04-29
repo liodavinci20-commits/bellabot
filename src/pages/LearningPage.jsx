@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ThemeToggle from '../components/ThemeToggle'
 import {
   HiArrowLeft,
   HiArrowRight,
@@ -251,7 +252,7 @@ export default function LearningPage() {
   /* ── Écran de fin ── */
   if (completed) {
     return (
-      <div className="min-h-screen bg-[#060d1f] bg-mesh flex flex-col">
+      <div className="min-h-screen bg-app bg-mesh flex flex-col">
         <CompletionScreen
           onRestart={() => { setCurrentStep(0); setCompleted(false); setPracticedSteps(new Set()); setAdaptation(null); setShowAdaptBanner(false) }}
           onExit={() => navigate('/dashboard')}
@@ -261,13 +262,13 @@ export default function LearningPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060d1f] bg-mesh flex">
+    <div className="min-h-screen bg-app bg-mesh flex">
 
       {/* ════════════════════════════════════
           SIDEBAR GAUCHE
       ════════════════════════════════════ */}
       <aside className="hidden lg:flex w-64 xl:w-72 shrink-0 flex-col
-        border-r border-white/6 bg-[#070e22] sticky top-0 h-screen overflow-hidden">
+        border-r border-white/6 bg-panel sticky top-0 h-screen overflow-hidden">
 
         {/* ── Branding Bella ── */}
         <div className="px-5 pt-6 pb-5 border-b border-white/6">
@@ -277,7 +278,7 @@ export default function LearningPage() {
               <HiOutlineLightningBolt className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-bold text-white tracking-tight">Bella</p>
+              <p className="text-sm font-bold text-white tracking-tight">AdaptativeCBot</p>
               <p className="text-[10px] text-white/30 leading-tight">Assistante pédagogique</p>
             </div>
           </div>
@@ -393,7 +394,7 @@ export default function LearningPage() {
             }`}
           >
             <HiOutlineChatAlt2 className="w-4 h-4 shrink-0" />
-            <span>{showChat ? 'Fermer Bella' : 'Demander à Bella'}</span>
+            <span>{showChat ? 'Fermer le chat' : 'AdaptativeCBot'}</span>
           </button>
         </div>
       </aside>
@@ -436,8 +437,8 @@ export default function LearningPage() {
             </span>
           </div>
 
-          {/* Actions mobiles */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* Actions mobiles + toggle */}
+          <div className="flex items-center gap-2">
             {step.exercise && (
               <button
                 onClick={() => { setShowEditor((v) => !v); setShowChat(false) }}
@@ -456,10 +457,10 @@ export default function LearningPage() {
             >
               <HiOutlineChatAlt2 className="w-4 h-4" />
             </button>
+            <ThemeToggle />
           </div>
 
-          {/* Spacer desktop */}
-          <div className="hidden lg:block w-[120px]" />
+          {/* Spacer desktop supprimé — toggle visible sur tous écrans */}
         </nav>
 
         {/* ── Contenu leçon ── */}
@@ -554,7 +555,7 @@ export default function LearningPage() {
 
           {/* Sheet */}
           <div
-            className="relative w-full max-w-3xl bg-[#070e22]
+            className="relative w-full max-w-3xl bg-panel
               border border-blue-500/20 border-b-0
               rounded-t-3xl shadow-2xl shadow-blue-500/10
               animate-slide-up overflow-hidden"
@@ -629,7 +630,7 @@ export default function LearningPage() {
               pointer-events-none hidden sm:block" />
 
             {/* Panneau chat */}
-            <div className="relative h-full bg-[#070e22] border border-violet-500/20
+            <div className="relative h-full bg-panel border border-violet-500/20
               rounded-t-3xl sm:rounded-3xl
               shadow-2xl shadow-violet-900/40 overflow-hidden flex flex-col">
               <ChatPanel onClose={() => setShowChat(false)} />

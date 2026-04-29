@@ -46,7 +46,7 @@ const BELLA_INTRO = {
   id: 'intro',
   from: 'bot',
   type: 'intro',
-  text: "Bonjour ! Je suis **Bella**, ton assistante pour cette séance.\n\nPose-moi n'importe quelle question sur les tableaux Python. Je suis là pour t'aider.",
+  text: "Bonjour ! Je suis **AdaptativeCBot**, ton assistante pour cette séance.\n\nPose-moi n'importe quelle question sur les tableaux Python. Je suis là pour t'aider.",
   timestamp: Date.now(),
 }
 

@@ -12,6 +12,7 @@ import {
 } from 'react-icons/hi'
 import { PROFILES } from '../data/profiles'
 import { useAuth } from '../hooks/useAuth'
+import ThemeToggle from '../components/ThemeToggle'
 
 /* ─── Icône par profil ─── */
 const ICONS = {
@@ -91,14 +92,13 @@ export default function ProfileSelectPage() {
   const handleConfirm = async () => {
     if (!selected) return
     setConfirming(true)
-    // Légère pause pour l'effet visuel
     await new Promise((r) => setTimeout(r, 500))
     selectProfile(selected)
     navigate('/dashboard', { replace: true })
   }
 
   return (
-    <div className="min-h-screen bg-[#060d1f] bg-mesh">
+    <div className="min-h-screen bg-app bg-mesh">
 
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-white/6 glass">
@@ -114,7 +114,7 @@ export default function ProfileSelectPage() {
             <div className="flex items-center justify-center w-7 h-7 rounded-lg glass-strong">
               <HiOutlineLightningBolt className="w-3.5 h-3.5 text-blue-400" />
             </div>
-            <span className="font-semibold text-gradient text-sm">Bella Bot</span>
+            <span className="font-semibold text-gradient text-sm">AdaptativeCBot</span>
           </div>
         </div>
 
@@ -128,7 +128,10 @@ export default function ProfileSelectPage() {
           </div>
         </div>
 
-        <span className="text-sm text-white/35 hidden sm:block">{user?.name}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/35 hidden sm:block">{user?.name}</span>
+          <ThemeToggle />
+        </div>
       </nav>
 
       {/* Contenu */}
@@ -141,7 +144,7 @@ export default function ProfileSelectPage() {
             <span className="text-gradient">d'apprentissage ?</span>
           </h1>
           <p className="text-white/45 text-base max-w-lg mx-auto">
-            Choisis le profil qui te ressemble le plus. Bella Bot adaptera ton parcours à ta façon d'apprendre.
+            Choisis le profil qui te ressemble le plus. AdaptativeCBot adaptera ton parcours à ta façon d'apprendre.
           </p>
         </div>
 

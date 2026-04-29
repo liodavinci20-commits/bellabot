@@ -14,6 +14,7 @@ import {
 } from 'react-icons/hi'
 import { useAuth } from '../hooks/useAuth'
 import DemoBanner from '../components/auth/DemoBanner'
+import ThemeToggle from '../components/ThemeToggle'
 
 const PROFILE_ICONS = {
   pratique:            HiOutlineBeaker,
@@ -34,7 +35,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060d1f] bg-mesh">
+    <div className="min-h-screen bg-app bg-mesh">
 
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-white/6 glass">
@@ -51,7 +52,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center w-7 h-7 rounded-lg glass-strong">
               <HiOutlineLightningBolt className="w-3.5 h-3.5 text-blue-400" />
             </div>
-            <span className="font-semibold text-gradient text-sm">Bella Bot</span>
+            <span className="font-semibold text-gradient text-sm">AdaptativeCBot</span>
           </div>
           {user?.isDemo && (
             <span className="px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-medium">
@@ -62,6 +63,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <span className="text-sm text-white/35 hidden sm:block">{user?.name}</span>
+          <ThemeToggle />
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass
@@ -138,7 +140,7 @@ export default function DashboardPage() {
               <p className="text-xs opacity-70 font-normal mt-0.5">
                 {profile
                   ? `Session adaptée à ton profil ${profile.name}`
-                  : 'Lancer une session avec Bella Bot'}
+                  : 'Lancer une session avec AdaptativeCBot'}
               </p>
             </div>
             <HiArrowLeft className="w-4 h-4 ml-auto rotate-180 opacity-60 group-hover:translate-x-1 transition-transform" />

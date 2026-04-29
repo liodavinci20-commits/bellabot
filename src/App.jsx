@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { useAuth } from './hooks/useAuth'
 import LoginPage from './pages/LoginPage'
 import ProfileSelectPage from './pages/ProfileSelectPage'
@@ -80,10 +81,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

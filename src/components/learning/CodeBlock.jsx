@@ -48,7 +48,7 @@ export default function CodeBlock({ label, code, type = 'neutral', comment }) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden border border-white/8 bg-[#0d1525]">
+    <div className="rounded-xl overflow-hidden border border-white/8 bg-code">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.03] border-b border-white/6">
         <div className="flex items-center gap-2.5">

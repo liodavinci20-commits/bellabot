@@ -138,7 +138,7 @@ export default function ChatPanel({ onClose }) {
           <HiOutlineLightningBolt className="w-4 h-4 text-white" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Bella</p>
+          <p className="text-sm font-semibold text-white">AdaptativeCBot</p>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs text-white/35">Assistante pédagogique</span>
@@ -175,7 +175,7 @@ export default function ChatPanel({ onClose }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Pose ta question à Bella..."
+            placeholder="Pose ta question à AdaptativeCBot..."
             disabled={typing}
             className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-white/25
               outline-none disabled:opacity-50"
