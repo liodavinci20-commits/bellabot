@@ -74,7 +74,7 @@ export default function CodeBlock({ label, code, type = 'neutral', comment }) {
       {/* Code */}
       <div className="overflow-x-auto">
         <pre className="p-4 text-[13px] leading-6 font-mono text-white/80">
-          {code.split('\n').map((line, i) => (
+          {(code ?? '').split('\n').map((line, i) => (
             <div key={i} className="flex gap-4">
               <span className="select-none text-white/15 text-right w-5 shrink-0">{i + 1}</span>
               <span className="flex-1">{highlight(line)}</span>

@@ -11,8 +11,18 @@ function normalize(str) {
     .trim()
 }
 
+// Noms lisibles des sections pour le préfixe contextuel
+const SECTION_LABELS = {
+  declaration: 'déclaration de tableau',
+  acces:       "lecture et modification d'une case",
+  remplir:     'remplissage avec scanf',
+  recherche:   'recherche de valeurs',
+  parcours:    'somme, moyenne et filtres',
+}
+
 // Trouve la meilleure réponse dans la KB
-function findBestMatch(input) {
+// currentSection booste les entrées appartenant à la section active
+function findBestMatch(input, currentSection) {
   const normalized = normalize(input)
   const words = normalized.split(/\s+/)
 
@@ -23,6 +33,7 @@ function findBestMatch(input) {
     let score = 0
     for (const keyword of entry.keywords) {
       const normKw = normalize(keyword)
+      if (normKw.length === 0) continue  // & %d %f etc. → chaîne vide → on ignore
       // Correspondance exacte de phrase
       if (normalized.includes(normKw)) score += 3
       // Correspondance par mot individuel
@@ -33,6 +44,9 @@ function findBestMatch(input) {
         }
       }
     }
+    // Bonus si l'entrée appartient à la section où se trouve l'élève
+    if (currentSection && entry.section === currentSection) score += 2
+
     if (score > bestScore) {
       bestScore = score
       bestMatch = entry
@@ -50,7 +64,7 @@ const BELLA_INTRO = {
   timestamp: Date.now(),
 }
 
-export function useChatBot() {
+export function useChatBot({ currentSection } = {}) {
   const [messages, setMessages] = useState([BELLA_INTRO])
   const [input, setInput]       = useState('')
   const [typing, setTyping]     = useState(false)
@@ -71,20 +85,27 @@ export function useChatBot() {
     // Simuler le temps de réponse de Bella
     await new Promise((r) => setTimeout(r, 700 + Math.random() * 400))
 
-    const match = findBestMatch(userText)
+    const match = findBestMatch(userText, currentSection)
+
+    // Préfixe contextuel si la question correspond à la section active
+    const isContextual = match && match.section && match.section === currentSection
+    const contextPrefix = isContextual
+      ? `Je vois que tu es dans la section **${SECTION_LABELS[currentSection]}** — et c'est une bonne question ! Voici :`
+      : null
+
     const botMsg = {
       id: nextId(),
       from: 'bot',
       timestamp: Date.now(),
       ...(match
-        ? { type: 'answer', response: match.response }
+        ? { type: 'answer', response: match.response, contextPrefix }
         : { type: 'default', response: DEFAULT_RESPONSE }
       ),
     }
 
     setMessages((prev) => [...prev, botMsg])
     setTyping(false)
-  }, [input])
+  }, [input, currentSection])
 
   const sendQuickQuestion = useCallback((question) => {
     sendMessage(question)

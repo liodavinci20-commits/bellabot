@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────
 // Illustrations SVG pédagogiques pour la séance sur les tableaux
 // ─────────────────────────────────────────────────────────────
+import { useTheme } from '../../context/ThemeContext'
 
 /* ── Tableau en mémoire : cases numérotées ────────────────── */
 export function ArrayBoxes({ values = [15, 12, 18, 10, 14], highlightIndex = null }) {
@@ -604,19 +605,25 @@ export function MinMaxHighlightC({ values = [12, 8, 15, 9, 14] }) {
 
 /* ── Carte mentale des tableaux (Visuel + Intuitif) ─────── */
 export function MindMapTableaux() {
+  const { isDark } = useTheme()
   const cx = 260, cy = 172, cr = 45
 
+  const codeFill   = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(30,27,75,0.45)'
+  const centerCode = isDark ? 'rgba(255,255,255,0.32)' : 'rgba(30,27,75,0.40)'
+  const subLabel   = isDark ? 'rgba(255,255,255,0.28)' : 'rgba(30,27,75,0.38)'
+
   const nodes = [
-    { label: 'Déclaration', code: 'int tab[5]',        nx: 88,  ny: 60,  stroke: '#60a5fa', bg: 'rgba(96,165,250,0.13)',  tc: '#93c5fd' },
-    { label: 'Accès',       code: 'tab[i]',             nx: 432, ny: 60,  stroke: '#34d399', bg: 'rgba(52,211,153,0.13)',  tc: '#6ee7b7' },
-    { label: 'Modification',code: 'tab[i] = val',       nx: 448, ny: 228, stroke: '#fbbf24', bg: 'rgba(251,191,36,0.13)',  tc: '#fcd34d' },
-    { label: 'Parcours',    code: 'for(i=0; i<5; i++)',  nx: 260, ny: 318, stroke: '#a78bfa', bg: 'rgba(167,139,250,0.13)', tc: '#c4b5fd' },
-    { label: 'Recherche',   code: 'min / max',          nx: 72,  ny: 228, stroke: '#f87171', bg: 'rgba(248,113,113,0.13)', tc: '#fca5a5' },
+    { label: 'Déclaration', code: 'int tab[5]',         nx: 88,  ny: 60,  stroke: '#60a5fa', bg: isDark ? 'rgba(96,165,250,0.13)'  : 'rgba(96,165,250,0.12)',  tc: '#60a5fa' },
+    { label: 'Accès',       code: 'tab[i]',              nx: 432, ny: 60,  stroke: '#818cf8', bg: isDark ? 'rgba(129,140,248,0.13)' : 'rgba(129,140,248,0.12)', tc: '#818cf8' },
+    { label: 'Modification',code: 'tab[i] = val',        nx: 448, ny: 228, stroke: '#fbbf24', bg: isDark ? 'rgba(251,191,36,0.13)'  : 'rgba(251,191,36,0.10)',  tc: '#d97706' },
+    { label: 'Parcours',    code: 'for(i=0; i<5; i++)',  nx: 260, ny: 318, stroke: '#a78bfa', bg: isDark ? 'rgba(167,139,250,0.13)' : 'rgba(167,139,250,0.12)', tc: '#7c3aed' },
+    { label: 'Recherche',   code: 'min / max',           nx: 72,  ny: 228, stroke: '#f87171', bg: isDark ? 'rgba(248,113,113,0.13)' : 'rgba(248,113,113,0.10)', tc: '#dc2626' },
   ]
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-1">
+      <p className="text-xs font-semibold uppercase tracking-wider mb-1"
+        style={{ color: subLabel }}>
         Carte mentale — toutes les opérations sur les tableaux
       </p>
       <svg width="520" height="368" viewBox="0 0 520 368"
@@ -632,25 +639,26 @@ export function MindMapTableaux() {
 
         {/* Nœud central */}
         <circle cx={cx} cy={cy} r={cr}
-          fill="rgba(59,130,246,0.14)" stroke="#3b82f6" strokeWidth="1.5" />
+          fill={isDark ? 'rgba(99,102,241,0.16)' : 'rgba(99,102,241,0.12)'}
+          stroke="#6366f1" strokeWidth="1.5" />
         <text x={cx} y={cy - 7} textAnchor="middle"
-          fill="#60a5fa" fontSize="14" fontWeight="700" fontFamily="Inter,system-ui,sans-serif">Tableau</text>
+          fill="#818cf8" fontSize="14" fontWeight="700" fontFamily="Inter,system-ui,sans-serif">Tableau</text>
         <text x={cx} y={cy + 11} textAnchor="middle"
-          fill="rgba(255,255,255,0.35)" fontSize="10" fontFamily="monospace">int notes[5]</text>
+          fill={centerCode} fontSize="10" fontFamily="monospace">int notes[5]</text>
 
         {/* Nœuds branches */}
         {nodes.map((n, i) => (
           <g key={`n${i}`}>
             <rect x={n.nx - 64} y={n.ny - 26} width={128} height={52} rx="10"
-              fill={n.bg} stroke={n.stroke} strokeWidth="1" strokeOpacity="0.55" />
+              fill={n.bg} stroke={n.stroke} strokeWidth="1" strokeOpacity="0.6" />
             <text x={n.nx} y={n.ny - 8} textAnchor="middle"
               fill={n.tc} fontSize="11" fontWeight="700" fontFamily="Inter,system-ui,sans-serif">{n.label}</text>
             <text x={n.nx} y={n.ny + 10} textAnchor="middle"
-              fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="monospace">{n.code}</text>
+              fill={codeFill} fontSize="10" fontFamily="monospace">{n.code}</text>
           </g>
         ))}
       </svg>
-      <p className="text-[10px] text-white/20 text-center mt-1">
+      <p className="text-[10px] text-center mt-1" style={{ color: subLabel }}>
         Clique sur n'importe quelle étape dans la sidebar pour explorer dans l'ordre qui te convient.
       </p>
     </div>

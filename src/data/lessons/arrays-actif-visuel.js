@@ -129,6 +129,11 @@ int main() {
             message: `Tu as écrit int points = [5] mais la taille se colle directement après le nom, sans "=" entre les deux. Le "=" sert uniquement à initialiser les valeurs, pas à définir la structure. Correction : int points[5]`,
             analogy: `En C on dit "tableau-à-5-cases" en collant [5] au nom — comme on écrit "boîte5" sans espace. Le = n'appartient pas à la structure, seulement aux valeurs.`,
             adaptedSteps: {
+              structure: {
+                reminder: { text: `Tu as mis "=" avant les crochets. En C, les crochets se collent directement au nom : int points[5], pas int points = [5].` },
+                intro: `Regarde le schéma : int points[5]. Les crochets [5] sont collés au nom "points" — pas après un "=". Le "=" sert uniquement à séparer la déclaration des valeurs initiales : int points[5] = {10, 23, 7, 18, 5}. La taille [5] appartient au nom, les valeurs {…} viennent après le "=".`,
+                keyPoint: `Syntaxe : int points[5] = {valeurs}. Les [5] sont collés au nom. Le "=" introduit les valeurs. Jamais int points = [5].`,
+              },
               acces: {
                 reminder: { text: `Tu avais mis "=" avant les crochets — rappel sur la position des crochets dans la syntaxe.` },
                 intro: `Tu avais écrit int points = [5]. L'erreur était sur la position du "=" : en C, les crochets de taille se collent directement au nom du tableau, pas après le signe égal. Cette règle est la même partout — que ce soit dans la déclaration ou dans l'accès. Quand tu écris points[2] pour accéder à la case, tu vois les crochets collés à "points". C'est exactement la même syntaxe que dans la déclaration int points[5].`,
@@ -170,6 +175,11 @@ int main() {
             message: `Tu as déclaré "int points" comme une variable simple. Un tableau nécessite des crochets avec sa taille pour réserver plusieurs cases. Correction : int points[5] — les [5] signifient "réserve 5 cases en mémoire".`,
             analogy: `Imagine un vestiaire. "int tab" c'est un seul casier. "int tab[5]" c'est une rangée de 5 casiers numérotés [0] à [4]. Les crochets créent la rangée de cases.`,
             adaptedSteps: {
+              structure: {
+                reminder: { text: `Tu as déclaré int points sans crochets. Le schéma montre 5 cases numérotées — les crochets [5] sont ce qui les crée.` },
+                intro: `Regarde le schéma : 5 cases côte à côte, numérotées [0] à [4]. Pour que ce schéma existe en mémoire, tu dois écrire int points[5]. Sans les crochets, le schéma reste vide — une seule case au lieu de 5. C'est la différence entre un casier unique et une rangée de 5 casiers numérotés.`,
+                keyPoint: `int points[5] = schéma à 5 cases numérotées [0] à [4]. Sans [5], il n'y a qu'une variable simple — le schéma est vide.`,
+              },
               acces: {
                 reminder: { text: `Tu avais écrit int points sans crochets — voici pourquoi les crochets créent les cases que la flèche peut cibler.` },
                 intro: `Tu avais écrit int points sans crochets — comme si tu voulais une seule case. Maintenant que tu sais que les crochets créent plusieurs cases, regarde comment la flèche d'accès fonctionne. Chaque case créée par int points[5] possède une adresse numérotée. La flèche points[i] pointe exactement sur la case numéro i. Sans les crochets à la déclaration, ces cases n'existent pas — la flèche n'a nulle part où pointer.`,
@@ -214,6 +224,11 @@ int main() {
             message: `Tu as déclaré une taille inférieure à 5 mais le schéma montre 5 cases. La taille doit correspondre exactement au nombre de cases dans le schéma. Avec une taille trop petite, la dernière valeur n'a nulle part où aller.`,
             analogy: `C'est comme commander une boîte de 4 cases pour un schéma qui en montre 5. La 5ème case du schéma n'existe pas en mémoire — et le C ne te prévient pas.`,
             adaptedSteps: {
+              structure: {
+                reminder: { text: `Tu as déclaré moins de 5 cases. Compte les cases dans le schéma — la taille doit correspondre exactement.` },
+                intro: `Le schéma montre 5 cases. Ta déclaration en réserve moins. La flèche ne peut pointer que sur les cases qui existent — si tu déclares [4], la 5ème case du schéma n'est jamais accessible. Ajuste la taille pour qu'elle corresponde exactement au schéma : int points[5].`,
+                keyPoint: `Taille = nombre de cases dans le schéma. 5 cases dans le schéma → int points[5]. La flèche ne peut cibler que les cases déclarées.`,
+              },
               acces: {
                 reminder: { text: `Tu avais déclaré moins de 5 cases — rappel sur la correspondance taille/schéma.` },
                 intro: `Tu avais déclaré une taille inférieure à 5 alors que le schéma montre 5 cases. En C, la taille détermine exactement combien de cases existent en mémoire — et donc sur lesquelles la flèche peut pointer. Si tu déclares [4], la flèche ne peut pointer que sur [0] à [3]. La case [4] du schéma n'existe pas.`,
@@ -258,6 +273,11 @@ int main() {
             message: `Tu as déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent en mémoire mais contiennent des valeurs imprévisibles — pas 0.`,
             analogy: `C'est comme réserver 6 cases dans le schéma alors qu'il n'en montre que 5. La 6ème case existe en mémoire, mais son contenu est ce que laissé là par le programme précédent.`,
             adaptedSteps: {
+              structure: {
+                reminder: { text: `Tu as déclaré plus de 5 cases. Le schéma n'en montre que 5 — les cases supplémentaires sont des "cases fantômes" avec des valeurs imprévisibles.` },
+                intro: `Le schéma montre 5 cases. Ta déclaration en crée plus. Les cases en trop existent en mémoire mais contiennent des valeurs aléatoires — la case fantôme au bout du schéma. Si la flèche la cible, elle lit une valeur inconnue. Ajuste à int points[5] pour que la déclaration corresponde exactement au schéma.`,
+                keyPoint: `Taille = exactement le nombre de cases dans le schéma. Trop grand → cases fantômes avec valeurs aléatoires. int points[5] = schéma exact à 5 cases.`,
+              },
               acces: {
                 reminder: { text: `Tu avais déclaré plus de 5 cases — les cases en trop contiennent des valeurs aléatoires, pas 0.` },
                 intro: `Tu avais déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent bien en mémoire, mais leur contenu est imprévisible. La flèche peut les cibler — mais ce qu'elle y lit est une valeur aléatoire héritée de la mémoire, pas 0. Visualise une case fantôme au bout du schéma, remplie de données inconnues.`,

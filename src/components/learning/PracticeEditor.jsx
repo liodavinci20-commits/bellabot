@@ -337,22 +337,6 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
           </div>
         )}
 
-        {/* ── Solution ── */}
-        {showSolution && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">Correction</p>
-              <button onClick={copySolution} className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 transition-colors">
-                {copied
-                  ? <><HiOutlineCheck className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copié</span></>
-                  : <><HiOutlineClipboardCopy className="w-3 h-3" />Copier</>
-                }
-              </button>
-            </div>
-            <CodeBlock label="Correction" code={exercise.answer} type="good" comment={null} />
-          </div>
-        )}
-
         {/* ── Actions ── */}
         <div className="flex flex-wrap gap-2 pt-1">
           {/* Valider */}
@@ -405,6 +389,30 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
             <HiOutlineRefresh className="w-4 h-4" />
           </button>
         </div>
+
+        {/* ── Solution — sous les boutons pour rester dans le champ visuel ── */}
+        {showSolution && (
+          <div className="space-y-2 pt-1">
+            {exercise.answer ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">Correction</p>
+                  <button onClick={copySolution} className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 transition-colors">
+                    {copied
+                      ? <><HiOutlineCheck className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copié</span></>
+                      : <><HiOutlineClipboardCopy className="w-3 h-3" />Copier</>
+                    }
+                  </button>
+                </div>
+                <CodeBlock label="Correction" code={exercise.answer} type="good" comment={null} />
+              </>
+            ) : (
+              <p className="text-xs text-white/30 text-center py-3">
+                Correction non disponible pour cet exercice.
+              </p>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

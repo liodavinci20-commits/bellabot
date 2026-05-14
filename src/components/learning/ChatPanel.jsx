@@ -6,6 +6,7 @@ import CodeBlock from './CodeBlock'
 /* ─── Rendu d'un message bot avec markdown simple ─── */
 function BotText({ text }) {
   const rendered = text
+    .replace(/&/g, '&amp;')
     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white/90">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em class="text-blue-300">$1</em>')
     .replace(/`(.*?)`/g, '<code class="px-1 py-0.5 rounded bg-white/10 text-emerald-300 text-xs font-mono">$1</code>')
@@ -50,7 +51,13 @@ function MessageBubble({ msg }) {
         <HiOutlineLightningBolt className="w-3.5 h-3.5 text-white" />
       </div>
       <div className="flex-1 space-y-2.5 max-w-[92%]">
-        {/* Texte */}
+        {/* Préfixe contextuel — affiché uniquement si la question correspond à la section active */}
+        {msg.contextPrefix && (
+          <div className="px-4 py-2.5 rounded-2xl rounded-tl-sm border border-violet-500/25 bg-violet-500/8">
+            <BotText text={msg.contextPrefix} />
+          </div>
+        )}
+        {/* Texte de la réponse */}
         <div className="glass rounded-2xl rounded-tl-sm px-4 py-3">
           <BotText text={response.text} />
         </div>
@@ -111,8 +118,8 @@ function TypingIndicator() {
 }
 
 /* ─── Panel principal ─── */
-export default function ChatPanel({ onClose }) {
-  const { messages, input, setInput, typing, sendMessage } = useChatBot()
+export default function ChatPanel({ onClose, currentSection }) {
+  const { messages, input, setInput, typing, sendMessage } = useChatBot({ currentSection })
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
 

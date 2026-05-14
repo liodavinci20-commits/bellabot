@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   HiOutlineBeaker,
@@ -88,6 +88,12 @@ export default function ProfileSelectPage() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState(null)
   const [confirming, setConfirming] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowWelcome(false), 4000)
+    return () => clearTimeout(t)
+  }, [])
 
   const handleConfirm = async () => {
     if (!selected) return
@@ -133,6 +139,19 @@ export default function ProfileSelectPage() {
           <ThemeToggle />
         </div>
       </nav>
+
+      {/* Toast de bienvenue */}
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500
+        ${showWelcome ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+        <div className="flex items-center gap-4 px-7 py-4 rounded-2xl
+          bg-[#1a1f2e]/90 backdrop-blur-md
+          border border-white/10 shadow-2xl shadow-black/40
+          text-base text-white/75">
+          <span>Bienvenue, <span className="font-semibold text-white">{user?.name}</span> !</span>
+          <div className="w-px h-5 bg-white/15" />
+          <button onClick={() => setShowWelcome(false)} className="text-white/30 hover:text-white/60 transition-colors">✕</button>
+        </div>
+      </div>
 
       {/* Contenu */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">

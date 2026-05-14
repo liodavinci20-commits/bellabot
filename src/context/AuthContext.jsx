@@ -1,14 +1,10 @@
-import { createContext, useState, useCallback } from 'react'
+import { createContext, useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase'
 
 export const AuthContext = createContext(null)
 
-const MOCK_USERS = [
-  { id: 1, email: 'admin@bellabot.ai', password: 'bella2024', name: 'Admin', role: 'teacher' },
-  { id: 2, email: 'eleve@bellabot.ai', password: 'eleve123', name: 'Élève Test', role: 'student' },
-]
-
 const DEMO_USER = {
-  id: 0,
+  id: 'demo',
   name: 'Utilisateur Demo',
   email: 'demo@bellabot.ai',
   role: 'student',
@@ -17,29 +13,70 @@ const DEMO_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
-  const [profile, setProfile] = useState(null)   // profil d'apprentissage choisi
+  const [profile, setProfile] = useState(null)
   const [error, setError]     = useState(null)
   const [loading, setLoading] = useState(false)
+  const [authReady, setAuthReady] = useState(false)
+
+  // Construire l'objet user à partir de la session Supabase
+  function buildUser(session) {
+    if (!session?.user) return null
+    const meta = session.user.user_metadata ?? {}
+    return {
+      id:    session.user.id,
+      email: session.user.email,
+      name:  meta.name ?? session.user.email.split('@')[0],
+      role:  meta.role ?? 'student',
+      isDemo: false,
+    }
+  }
+
+  // Restaurer la session au chargement
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(buildUser(session))
+      setAuthReady(true)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(buildUser(session))
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const login = useCallback(async (email, password) => {
     setLoading(true)
     setError(null)
-    await new Promise((r) => setTimeout(r, 800))
-
-    const found = MOCK_USERS.find(
-      (u) => u.email === email && u.password === password
-    )
-
-    if (found) {
-      const { password: _, ...safeUser } = found
-      setUser({ ...safeUser, isDemo: false })
-      setLoading(false)
-      return true
-    } else {
+    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+    if (err) {
       setError('Email ou mot de passe incorrect.')
       setLoading(false)
       return false
     }
+    setUser(buildUser(data.session))
+    setLoading(false)
+    return true
+  }, [])
+
+  const register = useCallback(async (name, email, password) => {
+    setLoading(true)
+    setError(null)
+    const { data, error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name, role: 'student' } },
+    })
+    if (err) {
+      setError(err.message === 'User already registered'
+        ? 'Cet email est déjà utilisé.'
+        : err.message)
+      setLoading(false)
+      return false
+    }
+    setUser(buildUser(data.session))
+    setLoading(false)
+    return true
   }, [])
 
   const loginAsDemo = useCallback(async () => {
@@ -50,24 +87,27 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
-  // L'élève choisit son profil → stocké dans le context
   const selectProfile = useCallback((profileData) => {
     setProfile(profileData)
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    if (!user?.isDemo) await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
     setError(null)
-  }, [])
+  }, [user])
 
   const clearError = useCallback(() => setError(null), [])
+
+  // Ne rend les enfants que quand la session est restaurée
+  if (!authReady) return null
 
   return (
     <AuthContext.Provider value={{
       user, profile,
       error, loading,
-      login, loginAsDemo,
+      login, register, loginAsDemo,
       selectProfile,
       logout, clearError,
     }}>

@@ -122,6 +122,30 @@ int main() {
             detect: (c) => !/int\s+\w+\s*\[\s*\d+\s*\]/.test(c),
             message: `Tu n'as pas encore utilisé la syntaxe int tableau[n]. Les crochets [] sont la clé de tout : c'est eux qui signalent au compilateur de réserver un bloc de mémoire contigu, adressable par indice.`,
             adaptedSteps: {
+              carte: {
+                reminder: {
+                  text: `Tu n'as pas encore écrit int tableau[n]. Les crochets [] sont la pièce manquante : sans eux, le compilateur n'a aucun bloc mémoire à adresser par indice.`,
+                },
+                intro: `Sur cette carte du territoire, la ligne de déclaration est le fondement de tout le reste. int temps[7] = {28, 31, 25, 33, 30, 27, 29} réserve 7 × 4 = 28 octets contigus — et c'est ce bloc qui rend les indices possibles. Reviens à la carte mentale : chaque opération (lire, modifier, parcourir) dépend du fait que ces 7 cases existent en mémoire. Sans les crochets, aucune de ces opérations ne peut fonctionner.`,
+                keyPoint: `int temps[7] = {…} est la ligne qui "crée" les 7 cases. Toutes les opérations de la carte mentale — temps[3], temps[6], la boucle — supposent que ces cases existent. Les crochets [7], c'est la déclaration de leur existence.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'brackets-carte-schema',
+                    label: 'La syntaxe manquante — avant et après',
+                    code: `// ❌ Sans crochets — aucune case créée, la carte est vide
+int temps;
+// → temps[3] et temps[6] sont impossibles
+
+// ✅ Avec crochets — 7 cases créées, la carte est complète
+int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+// → temps[3] = 33  (4ème jour)
+// → temps[6] = 29  (dernier jour)`,
+                    type: 'neutral',
+                    comment: `Les crochets [7] créent les cases. Les indices [3] et [6] les ciblent. Ce sont deux usages distincts du même symbole.`,
+                  },
+                ],
+              },
               fondation: {
                 reminder: {
                   text: `Rappel Étape 1 : tu n'avais pas encore utilisé int tableau[n]. Ce bloc t'explique pourquoi les crochets [] sont fondamentaux — pas juste une syntaxe à mémoriser, mais le reflet direct d'un choix d'architecture mémoire.`,
@@ -181,6 +205,31 @@ int temps[7] = {28, 31, 25, 33, 30, 27, 29};
             },
             message: `Tu as déclaré un tableau avec une taille différente de 7. La taille n'est pas un détail stylistique — elle définit exactement le nombre d'octets réservés en mémoire.`,
             adaptedSteps: {
+              carte: {
+                reminder: {
+                  text: `Tu as déclaré un tableau, mais pas avec 7 cases. L'exercice demande exactement 7 températures — la taille doit correspondre au nombre de valeurs.`,
+                },
+                intro: `Relis la carte mentale : l'exercice stocke les températures de 7 jours. La taille dans int temps[7] n'est pas arbitraire — elle dit au compilateur "réserve exactement 7 × 4 = 28 octets". Si tu mets 5, les valeurs du 6ème et 7ème jour n'ont nulle part où aller. Si tu mets 10, les cases [7] à [9] contiennent des valeurs aléatoires et les accès temps[3] et temps[6] pourraient lire des données incorrectes. Déduis : que doit valoir la taille quand on a exactement 7 valeurs à stocker ?`,
+                keyPoint: `Règle : taille = nombre exact de valeurs. Compte les valeurs entre accolades → {28, 31, 25, 33, 30, 27, 29} = 7 valeurs → int temps[7]. Un seul bon chiffre possible.`,
+                extraCodeBlocks: [
+                  {
+                    position: 'before',
+                    id: 'size-carte-schema',
+                    label: 'Taille exacte vs incorrecte — comparaison',
+                    code: `// ✅ Taille exacte — 7 valeurs, 7 cases
+int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+//  [0]=28  [1]=31  [2]=25  [3]=33  [4]=30  [5]=27  [6]=29
+//  temps[3] = 33 ✓   temps[6] = 29 ✓
+
+// ❌ Taille incorrecte (5) — les 2 dernières valeurs perdues
+int temps[5] = {28, 31, 25, 33, 30};
+//  [0]=28  [1]=31  [2]=25  [3]=33  [4]=30   [5] et [6] n'existent pas !
+//  temps[6] → accès hors limites → valeur imprévisible`,
+                    type: 'neutral',
+                    comment: `Compte les valeurs entre accolades. Ce nombre est la seule taille correcte.`,
+                  },
+                ],
+              },
               fondation: {
                 reminder: {
                   text: `Rappel Étape 1 : tu avais déclaré un tableau avec une taille incorrecte. Ce bloc t'explique pourquoi la taille est une décision d'architecture, pas un chiffre quelconque — elle détermine directement la mémoire allouée.`,
@@ -241,6 +290,13 @@ int temps[5] = {28, 31, 25, 33, 30};
             detect: (c) => /printf[^;]*\[\s*4\s*\]/.test(c) && !/\[\s*3\s*\]/.test(c),
             message: `Tu as utilisé l'indice [4] pour le 4ème jour au lieu de [3]. C'est la confusion rang/offset — un classique base-0. L'indice n'est pas un rang : c'est un décalage depuis le début du tableau.`,
             adaptedSteps: {
+              carte: {
+                reminder: {
+                  text: `Tu as utilisé l'indice [4] pour le 4ème jour au lieu de [3]. Les indices commencent à 0 — le rang 4 correspond au décalage 3.`,
+                },
+                intro: `Dans la carte mentale, accéder à temps[3] signifie "décale de 3 cases depuis le début". Le 4ème jour est à la 4ème case, mais son décalage depuis le début est de 3 (0, 1, 2, 3). La confusion vient de ce que le langage courant dit "4ème" alors que C dit "décalage 3". Relis l'exercice : "4ème jour (indice 3)" — le parenthèse te le dit explicitement. Formule à retenir : indice = rang - 1.`,
+                keyPoint: `Rang 4 → indice 3. Rang N → indice N-1. C'est la règle base-0 : les indices sont des décalages depuis la 1ère case, qui elle-même est au décalage 0.`,
+              },
               fondation: {
                 reminder: {
                   text: `Rappel Étape 1 : tu avais utilisé [4] pour le 4ème jour (devrait être [3]). Ce bloc t'explique pourquoi la base-0 existe et comment en faire un réflexe par la logique, pas par la mémorisation.`,
@@ -299,6 +355,13 @@ int temps[5] = {28, 31, 25, 33, 30};
             detect: (c) => /printf[^;]*\[\s*7\s*\]/.test(c),
             message: `Tu as utilisé l'indice [7] pour le dernier jour. Mais un tableau de 7 cases a ses indices de [0] à [6] — il n'y a pas de case [7]. Accéder à temps[7] lit une zone mémoire non réservée.`,
             adaptedSteps: {
+              carte: {
+                reminder: {
+                  text: `Tu as utilisé l'indice [7] pour le dernier jour, mais un tableau de 7 cases va de [0] à [6]. La case [7] n'existe pas.`,
+                },
+                intro: `Relis la carte mentale : int temps[7] réserve les cases [0] à [6]. Le dernier indice valide est toujours taille - 1. Ici : 7 - 1 = 6. C ne génère pas d'erreur si tu accèdes à temps[7] — il lit simplement la mémoire qui suit le tableau, avec une valeur imprévisible. L'exercice précise d'ailleurs "dernier jour (indice 6)" — la réponse est directement dans l'énoncé.`,
+                keyPoint: `Dernier indice valide = taille - 1 = 7 - 1 = 6. Donc temps[6], pas temps[7]. Cette règle est absolue en C.`,
+              },
               fondation: {
                 reminder: {
                   text: `Rappel Étape 1 : accès à temps[7] qui n'existe pas dans un tableau de 7 cases. Ce bloc t'explique pourquoi la borne supérieure est toujours taille-1, et ce qui se passe réellement quand on la dépasse.`,
@@ -351,6 +414,20 @@ int temps[5] = {28, 31, 25, 33, 30};
           },
 
         ],
+        answer: `#include <stdio.h>
+
+int main() {
+    // 1. Tableau des 7 températures
+    int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+
+    // 2. Température du 4ème jour (indice 3) → 33
+    printf("%d\\n", temps[3]);
+
+    // 3. Température du dernier jour (indice 6) → 29
+    printf("%d\\n", temps[6]);
+
+    return 0;
+}`,
       },
     },
 
@@ -441,6 +518,24 @@ int main() {
           /\[1\]\s*=\s*17/.test(code) &&
           /\[2\]\s*=\s*11/.test(code) &&
           /printf/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    // Réponse : un tableau de 30 int occupe 30 × 4 = 120 octets
+
+    // 1. Tableau de 30 notes (sans initialisation)
+    int classe[30];
+
+    // 2. Assigne les 3 premières notes
+    classe[0] = 14;
+    classe[1] = 17;
+    classe[2] = 11;
+
+    // 3. Affiche la note du 2ème élève (indice 1) → 17
+    printf("%d\\n", classe[1]);
+
+    return 0;
+}`,
       },
     },
 
@@ -551,6 +646,26 @@ int main() {
           /printf.*\[4\]/.test(code) &&
           /\[0\]\s*=\s*99/.test(code) &&
           /printf.*\[0\]/.test(code.split(/\[0\]\s*=\s*99/)[1] || ''),
+        answer: `#include <stdio.h>
+
+int main() {
+    // 1. Déclaration du tableau
+    int scores[5] = {5, 10, 15, 20, 25};
+
+    // 2. Affiche la case [2] → 15
+    printf("%d\\n", scores[2]);
+
+    // 3. Affiche la dernière case (indice 4) → 25
+    printf("%d\\n", scores[4]);
+
+    // 4. Modifie la case [0]
+    scores[0] = 99;
+
+    // 5. Affiche la case [0] après modification → 99
+    printf("%d\\n", scores[0]);
+
+    return 0;
+}`,
       },
     },
 
@@ -658,6 +773,31 @@ int main() {
           /somme|total|sum/.test(code) &&
           /7\.0|7\./.test(code) &&
           /printf/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    // 1. Tableau des températures
+    int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+
+    // 2. Boucle pour afficher chaque température
+    printf("Temperatures :\\n");
+    for(int i = 0; i < 7; i++) {
+        printf("%d\\n", temps[i]);
+    }
+
+    // 3. Calcule la somme
+    int somme = 0;
+    for(int i = 0; i < 7; i++) {
+        somme = somme + temps[i];
+    }
+
+    // 4. Calcule et affiche la moyenne
+    float moy = somme / 7.0;
+    printf("Somme : %d\\n", somme);
+    printf("Moyenne : %.1f\\n", moy);
+
+    return 0;
+}`,
       },
     },
 
@@ -780,6 +920,33 @@ int main() {
           /7\.0/.test(code) &&
           /printf.*max/.test(code) &&
           /printf.*moy/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    // 1. Déclare le tableau
+    int temp[7] = {28, 31, 25, 33, 30, 27, 29};
+
+    // 2. Trouve le maximum
+    int max = temp[0];
+    for(int i = 1; i < 7; i++) {
+        if(temp[i] > max) {
+            max = temp[i];
+        }
+    }
+
+    // 3. Calcule la somme et la moyenne
+    int somme = 0;
+    for(int i = 0; i < 7; i++) {
+        somme = somme + temp[i];
+    }
+    float moy = somme / 7.0;
+
+    // 4. Affiche les résultats
+    printf("Jour le plus chaud : %d degres\\n", max);
+    printf("Moyenne semaine : %.1f degres\\n", moy);
+
+    return 0;
+}`,
       },
     },
 

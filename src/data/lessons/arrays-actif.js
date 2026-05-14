@@ -122,6 +122,11 @@ int main() {
             message: `Tu as écrit "int points" sans crochets. En C, un tableau DOIT avoir une taille entre crochets : int points[5]. Sans ça, le programme ne sait pas combien de cases réserver en mémoire.`,
             analogy: `C'est comme commander "des billets de cinéma" sans dire combien. Le guichetier ne peut rien faire. Avec int points[5], tu dis exactement : "réserve-moi 5 cases en mémoire".`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Tu as écrit int points sans crochets — la taille entre crochets est obligatoire pour qu'un tableau existe en mémoire.` },
+                intro: `int points sans crochets, c'est comme commander "des places de cinéma" sans préciser combien. Le programme ne peut pas réserver de cases sans connaître leur nombre. int points[5] dit exactement "prépare 5 cases". Essaie : remplace int points; par int points[5] = {12, 8, 15, 5, 20};`,
+                keyPoint: `La taille entre crochets est ce qui transforme une variable en tableau. Sans [5], pas de cases — le programme ignore combien d'espace réserver.`,
+              },
               acces: {
                 reminder: { text: `Tu avais écrit int points sans crochets — voici pourquoi la taille est indispensable.` },
                 intro: `Tu avais écrit int points sans crochets. Le problème : sans la taille, le programme ne sait pas combien de cases préparer en mémoire. C'est comme demander à quelqu'un de te garder "des" places au cinéma sans préciser combien — il ne peut rien faire. int points[5] dit exactement : "prépare-moi 5 cases". Ces 5 cases existent maintenant en mémoire, côte à côte, chacune numérotée de 0 à 4. Pour lire ou modifier l'une d'elles, tu donnes son numéro — son indice.`,
@@ -166,6 +171,11 @@ int main() {
             message: `Tu as déclaré points avec une taille inférieure à 5 pour stocker 5 valeurs. En C, la taille doit correspondre exactement au nombre de valeurs. Les cases manquantes n'ont nulle part où aller — elles écrasent la mémoire voisine.`,
             analogy: `C'est comme commander une boîte de 4 œufs pour en mettre 5. Le 5ème tombe hors de la boîte — et en C, ça ne plante pas toujours : il écrase silencieusement une autre donnée.`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Tu as déclaré points avec une taille trop petite. Compte les valeurs à stocker — la taille doit correspondre exactement.` },
+                intro: `Compte les valeurs que tu dois stocker : {12, 8, 15, 5, 20} → 5 valeurs → int points[5]. Avec une taille trop petite (ex : int points[3]), les valeurs 4 et 5 n'ont nulle part où aller — elles écrasent une zone mémoire inconnue sans que le programme se plaigne. C'est la boîte de 4 œufs pour 5 œufs.`,
+                keyPoint: `Taille = nombre exact de valeurs entre accolades. Compte-les, puis écris ce nombre entre crochets. Ici : 5 valeurs → int points[5].`,
+              },
               acces: {
                 reminder: { text: `Tu avais déclaré une taille trop petite — rappel sur pourquoi la taille doit être exacte.` },
                 intro: `Tu avais déclaré points avec une taille inférieure à 5 pour stocker 5 valeurs. En C, quand tu déclares points[4], le programme réserve exactement 4 cases — les indices 0, 1, 2 et 3. La 5ème valeur n'avait nulle part où aller. Elle aurait été écrite dans une zone mémoire qui ne t'appartient pas : un dépassement mémoire. Dangereux car le programme ne plante pas toujours — il continue parfois avec des données corrompues.`,
@@ -210,6 +220,11 @@ int main() {
             message: `Tu as déclaré une taille supérieure à 5 pour stocker 5 valeurs. En C, les cases non initialisées ne valent pas 0 — elles contiennent une valeur aléatoire héritée de la mémoire. "Prévoir grand" n'est pas une sécurité.`,
             analogy: `C'est comme réserver 6 casiers pour 5 affaires. Le 6ème casier n'est pas vide — il contient ce que laissé le locataire précédent. Si tu l'ouvres par erreur, tu trouves n'importe quoi.`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Tu as déclaré points avec une taille trop grande. Les cases en surplus contiennent des valeurs imprévisibles — pas 0.` },
+                intro: `Tu as réservé plus de cases que nécessaire. Les cases supplémentaires existent en mémoire mais leur contenu est aléatoire — ce qui traînait là avant ton programme. C'est le casier du locataire précédent : il n'est pas vide. int points[5] avec 5 valeurs, c'est la seule taille juste.`,
+                keyPoint: `En C, "prévoir grand" n'est pas une sécurité. Les cases non initialisées ont des valeurs imprévisibles. Taille exacte = taille de la liste de valeurs.`,
+              },
               acces: {
                 reminder: { text: `Tu avais déclaré une taille trop grande — les cases vides contiennent des valeurs imprévisibles.` },
                 intro: `Tu avais déclaré points avec une taille supérieure à 5 pour stocker 5 valeurs. Le programme a réservé plus de cases que nécessaire. Les cases supplémentaires existent bien en mémoire, mais leur contenu est imprévisible : c'est ce qui traînait dans cette zone avant que ton programme démarre. Accéder à ces cases donnera un résultat faux — et le compilateur ne te préviendra pas.`,

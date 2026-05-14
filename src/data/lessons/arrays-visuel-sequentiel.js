@@ -144,6 +144,11 @@ int main() {
             message: `Tu as écrit "int scores" comme une variable simple, sans taille entre crochets. La syntaxe correcte est : int scores[6] = {...}. Les crochets [6] disent au programme "réserve 6 cases". Sans eux, aucune case n'est créée.`,
             analogy: `Un tableau sans crochets, c'est comme demander un classeur sans préciser le nombre d'intercalaires. Le classeur n'a aucune section numérotée.`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Étape 1 : tu as écrit int scores sans crochets. Les crochets [6] sont obligatoires pour créer les 6 cases.` },
+                intro: `Tu as écrit int scores sans crochets. Résultat : aucune case n'est créée. La syntaxe correcte est int scores[6] = {45, 32, 67, 28, 55, 41}. Le [6] dit au programme "réserve 6 cases numérotées [0] à [5]". C'est l'étape 1 — sans elle, les étapes 2 à 5 sont impossibles.`,
+                keyPoint: `Étape 1 correcte : int scores[6] = {45, 32, 67, 28, 55, 41}. Les crochets [6] créent 6 cases. Sans eux, scores n'est qu'une variable simple — aucun indice n'est possible.`,
+              },
               acces: {
                 reminder: { text: `Étape 1 → Étape 2 : tu avais écrit scores sans crochets. Les crochets [6] créent les 6 cases que l'on va accéder ici.` },
                 intro: `À l'étape 1 tu avais déclaré scores sans crochets. Pour pouvoir écrire scores[0], scores[2]... à cette étape, les cases doivent exister — et elles n'existent que grâce à int scores[6]. Les crochets de la déclaration créent les cases. Les crochets de l'accès les ciblent. C'est le même symbole, deux rôles différents, dans un ordre précis.`,
@@ -197,6 +202,11 @@ int scores[6] = {45, 32, 67, 28, 55, 41};
             message: `Tu as déclaré scores avec une taille inférieure à 6 pour stocker 6 valeurs. La taille doit correspondre exactement au nombre de valeurs. Compte les valeurs : 45, 32, 67, 28, 55, 41 → 6 valeurs → int scores[6].`,
             analogy: `C'est comme réserver 5 pages dans un cahier pour 6 leçons. La 6ème leçon n'a nulle part où aller.`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Étape 1 : tu as déclaré scores avec moins de 6 cases. Compte les valeurs : il y en a 6 → taille = 6.` },
+                intro: `Tu as déclaré une taille trop petite. Compte les valeurs entre accolades : 45, 32, 67, 28, 55, 41 → 6 valeurs. La taille doit être exactement 6. Avec 5 cases pour 6 valeurs, la 6ème valeur (41) n'a nulle part où aller — 5 pages de cahier pour 6 leçons.`,
+                keyPoint: `Étape 1 correcte : int scores[6] = {45, 32, 67, 28, 55, 41}. Compte les valeurs → écris ce nombre entre crochets. 6 valeurs → [6].`,
+              },
               acces: {
                 reminder: { text: `Étape 1 → Étape 2 : tu avais déclaré moins de 6 cases — rappel sur la correspondance taille/valeurs.` },
                 intro: `À l'étape 1 tu avais déclaré une taille inférieure à 6. En C, la taille détermine exactement quelles cases existent et lesquelles sont accessibles. Si tu déclares scores[5], la case [5] n'existe pas — scores[5] est hors limites. Regarde le tableau de correspondance ci-dessous pour voir l'impact.`,
@@ -251,6 +261,11 @@ int scores[6] = {45, 32, 67, 28, 55, 41};
             message: `Tu as déclaré scores avec une taille supérieure à 6 pour stocker 6 valeurs. En C, les cases non initialisées ne contiennent pas 0 — elles contiennent une valeur imprévisible. La taille doit être exactement 6.`,
             analogy: `C'est comme réserver 7 pages dans un cahier pour 6 leçons. La 7ème page existe, mais son contenu est imprévisible — elle n'est pas vide.`,
             adaptedSteps: {
+              declaration: {
+                reminder: { text: `Étape 1 : tu as déclaré scores avec plus de 6 cases. Les cases en surplus ont des valeurs imprévisibles, pas 0.` },
+                intro: `Tu as déclaré plus de cases que nécessaire. Les cases supplémentaires existent mais contiennent des valeurs aléatoires héritées de la mémoire — la 7ème page du cahier n'est pas vide, elle contient des données d'un autre programme. La taille exacte est 6 : ni plus, ni moins.`,
+                keyPoint: `Étape 1 correcte : int scores[6] = {45, 32, 67, 28, 55, 41}. La taille [6] est la seule correcte pour exactement 6 valeurs.`,
+              },
               acces: {
                 reminder: { text: `Étape 1 → Étape 2 : tu avais déclaré plus de 6 cases. Les cases supplémentaires ont des valeurs imprévisibles.` },
                 intro: `À l'étape 1 tu avais déclaré une taille supérieure à 6. Les cases supplémentaires existent bien en mémoire, mais elles ne contiennent pas 0 — elles contiennent ce qui traînait dans cette zone mémoire avant ton programme. Accéder à scores[6] ou scores[7] à l'étape 2 donnera une valeur imprévisible.`,
@@ -349,6 +364,20 @@ int resultats[10];
           },
 
         ],
+        answer: `#include <stdio.h>
+
+int main() {
+    // 1. Déclare et initialise le tableau "scores" de 6 entiers
+    int scores[6] = {45, 32, 67, 28, 55, 41};
+
+    // 2. Déclare le tableau vide "resultats" de 10 entiers
+    int resultats[10];
+
+    // 3. Affiche la taille du tableau "scores"
+    printf("Taille : %d\\n", 6);
+
+    return 0;
+}`,
       },
     },
 
@@ -458,6 +487,27 @@ int main() {
           /temp\[6\]/.test(code) &&
           /jour4\s*=\s*temp\[3\]/.test(code) &&
           /printf.*jour4/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    int temp[7] = {28, 31, 25, 33, 30, 27, 29};
+    //             [0] [1] [2] [3] [4] [5] [6]
+
+    // 1. Affiche le 1er jour (indice 0) → 28
+    printf("Jour 1 : %d\\n", temp[0]);
+
+    // 2. Affiche le 3ème jour (indice 2) → 25
+    printf("Jour 3 : %d\\n", temp[2]);
+
+    // 3. Affiche le dernier jour (indice 6) → 29
+    printf("Dernier : %d\\n", temp[6]);
+
+    // 4. Stocke temp[3] dans une variable "jour4" et affiche-la
+    int jour4 = temp[3];
+    printf("Jour 4 : %d\\n", jour4);
+
+    return 0;
+}`,
       },
     },
 
@@ -562,6 +612,29 @@ int main() {
           /scores\[4\]\s*=\s*1/.test(code) &&
           /scores\[2\]\s*=\s*scores\[2\]\s*\*\s*2/.test(code) &&
           /printf/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    int scores[5] = {10, 20, 30, 40, 50};
+
+    // 1. Remplace la case [0] par 99
+    scores[0] = 99;
+
+    // 2. Remplace la case [4] par 1
+    scores[4] = 1;
+
+    // 3. Double la case [2]
+    scores[2] = scores[2] * 2;
+
+    // 4. Affiche les 5 cases → 99, 20, 60, 40, 1
+    printf("%d\\n", scores[0]);
+    printf("%d\\n", scores[1]);
+    printf("%d\\n", scores[2]);
+    printf("%d\\n", scores[3]);
+    printf("%d\\n", scores[4]);
+
+    return 0;
+}`,
       },
     },
 
@@ -696,6 +769,30 @@ int main() {
           /for\s*\(/.test(code) &&
           /printf.*max/.test(code) &&
           /printf.*min/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    int temps[7] = {28, 31, 25, 33, 30, 27, 29};
+
+    // Initialisation
+    int max = temps[0];
+    int min = temps[0];
+
+    // Parcours de i=1 à i<7
+    for(int i = 1; i < 7; i++) {
+        if(temps[i] > max) {
+            max = temps[i];
+        }
+        if(temps[i] < min) {
+            min = temps[i];
+        }
+    }
+
+    printf("Maximum : %d\\n", max);
+    printf("Minimum : %d\\n", min);
+
+    return 0;
+}`,
       },
     },
 
@@ -839,6 +936,38 @@ int main() {
           /notes\[i\]\s*>\s*max/.test(code) &&
           /6\.0/.test(code) &&
           /printf.*moy/.test(code),
+        answer: `#include <stdio.h>
+
+int main() {
+    // ÉTAPE 1 — Déclaration + initialisation
+    int notes[6] = {14, 11, 18, 7, 15, 9};
+
+    // ÉTAPE 2 — Accès (4ème note, indice 3 → 7)
+    printf("4eme note : %d\\n", notes[3]);
+
+    // ÉTAPE 3 — Modification (2ème note, indice 1 → 20)
+    notes[1] = 20;
+
+    // ÉTAPE 4 — Recherche du max
+    int max = notes[0];
+    for(int i = 1; i < 6; i++) {
+        if(notes[i] > max) {
+            max = notes[i];
+        }
+    }
+    printf("Maximum : %d\\n", max);
+
+    // ÉTAPE 5 — Parcours : somme et moyenne
+    int somme = 0;
+    for(int i = 0; i < 6; i++) {
+        somme = somme + notes[i];
+    }
+    float moy = somme / 6.0;
+    printf("Somme : %d\\n", somme);
+    printf("Moyenne : %.1f\\n", moy);
+
+    return 0;
+}`,
       },
     },
 

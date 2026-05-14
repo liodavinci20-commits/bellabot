@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bella Bot — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:       #05080f;
+    --surface:  #0b1120;
+    --border:   rgba(255,255,255,0.06);
+    --border2:  rgba(255,255,255,0.1);
+    --text:     #cbd5e1;
+    --muted:    rgba(255,255,255,0.32);
+    --accent:   #6366f1;
+    --accent2:  #3b82f6;
+    --emerald:  #10b981;
+    --amber:    #f59e0b;
+    --violet:   #8b5cf6;
+    --red:      #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 80px 80px 72px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 10% 50%, rgba(99,102,241,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 20%, rgba(59,130,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; max-width: 1100px; margin: 0 auto; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc;
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #6366f1;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #6366f1;
+  }
+  .hero h1 {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #f8fafc;
+    line-height: 1.1;
+    margin-bottom: 18px;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.75;
+  }
+  .hero-meta {
+    margin-top: 36px;
+    display: flex;
+    gap: 32px;
+  }
+  .meta-item .val {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+  }
+  .meta-item .lbl {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── LAYOUT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 80px 80px; }
+
+  section { margin-bottom: 80px; }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── GRID ── */
+  .grid { display: grid; gap: 12px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: border-color .25s, transform .2s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .card p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* ══ DIAGRAMME VISUEL (style référence) ══ */
+
+  .arch-canvas {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  /* Bloc principal */
+  .arch-block {
+    flex: 1;
+    min-width: 240px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid;
+  }
+  .arch-block-header {
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .arch-block-header .title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #fff;
+  }
+  .arch-block-header .subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.6;
+    color: #fff;
+  }
+  .arch-block-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Section interne */
+  .arch-section {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid;
+  }
+  .arch-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+    opacity: 0.65;
+  }
+  .arch-item {
+    font-size: 12px;
+    padding: 4px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    line-height: 1.5;
+  }
+  .arch-item:last-child { border-bottom: none; }
+  .arch-item .ai-name { font-weight: 600; color: rgba(255,255,255,0.8); font-size: 12px; }
+  .arch-item .ai-desc { font-size: 11px; color: rgba(255,255,255,0.35); }
+  .arch-item .ai-mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.55); }
+
+  /* Couleurs des blocs */
+  .ab-indigo { border-color: rgba(99,102,241,0.35); }
+  .ab-indigo .arch-block-header { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); }
+  .ab-indigo .arch-block-body   { background: rgba(99,102,241,0.06); }
+  .ab-indigo .arch-section       { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.18); }
+  .ab-indigo .arch-section-title { color: #a5b4fc; }
+
+  .ab-green { border-color: rgba(16,185,129,0.35); }
+  .ab-green .arch-block-header { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+  .ab-green .arch-block-body   { background: rgba(16,185,129,0.05); }
+  .ab-green .arch-section       { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.18); }
+  .ab-green .arch-section-title { color: #6ee7b7; }
+
+  .ab-violet { border-color: rgba(139,92,246,0.35); }
+  .ab-violet .arch-block-header { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+  .ab-violet .arch-block-body   { background: rgba(139,92,246,0.05); }
+  .ab-violet .arch-section       { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.18); }
+  .ab-violet .arch-section-title { color: #c4b5fd; }
+
+  .ab-amber { border-color: rgba(245,158,11,0.35); }
+  .ab-amber .arch-block-header { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+  .ab-amber .arch-block-body   { background: rgba(245,158,11,0.04); }
+  .ab-amber .arch-section       { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.18); }
+  .ab-amber .arch-section-title { color: #fcd34d; }
+
+  /* Connecteur entre blocs */
+  .arch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    min-width: 64px;
+    flex-shrink: 0;
+    gap: 6px;
+  }
+  .connector-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .connector-arrow {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: rgba(255,255,255,0.18);
+    font-size: 16px;
+  }
+  .connector-arrow .hor-line {
+    width: 20px;
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    position: relative;
+  }
+
+  /* Bloc utilisateur */
+  .user-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+  .user-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .user-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ══ DIAGRAMME CHATBOT VISUEL ══ */
+
+  .chatbot-canvas {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .chatbot-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chatbot-col.narrow { flex: 0 0 140px; }
+
+  .cb-node {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid;
+    position: relative;
+  }
+  .cb-node h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .cb-node p  { font-size: 12px; color: var(--muted); line-height: 1.65; }
+
+  .cb-node.n-blue   { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
+  .cb-node.n-blue h4 { color: #93c5fd; }
+  .cb-node.n-indigo { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.25); }
+  .cb-node.n-indigo h4 { color: #a5b4fc; }
+  .cb-node.n-green  { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); }
+  .cb-node.n-green h4 { color: #6ee7b7; }
+  .cb-node.n-amber  { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); }
+  .cb-node.n-amber h4 { color: #fcd34d; }
+  .cb-node.n-red    { background: rgba(239,68,68,0.07);  border-color: rgba(239,68,68,0.2); }
+  .cb-node.n-red h4 { color: #fca5a5; }
+  .cb-node.n-ghost  { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); }
+  .cb-node.n-ghost h4 { color: rgba(255,255,255,0.6); }
+
+  .cb-decision {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    position: relative;
+  }
+  .cb-decision::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.08));
+    z-index: -1;
+  }
+
+  .cb-arrow-down {
+    display: flex; justify-content: center;
+    color: rgba(255,255,255,0.15);
+    font-size: 16px;
+    padding: 2px 0;
+  }
+  .cb-arrow-right {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 28px;
+    color: rgba(255,255,255,0.15);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .cb-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .cb-score.pos { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+  .cb-score.neg { background: rgba(245,158,11,0.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+
+  /* ── ACCENT CARD ── */
+  .card-accent {
+    background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(59,130,246,0.06) 100%);
+    border-color: rgba(99,102,241,0.22);
+  }
+  .card-accent h3 { color: #e0e7ff; }
+  .card-accent p  { color: rgba(224,231,255,0.6); }
+
+  /* ── ROUTE TABLE ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+  }
+  td {
+    padding: 16px 24px;
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.55);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td.mono { font-family: 'JetBrains Mono', monospace; color: #93c5fd; font-size: 13px; }
+  td.route-guard {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(99,102,241,0.07);
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: inline-block;
+  }
+
+  /* ── PILLS ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    transition: border-color .2s;
+  }
+  .pill:hover { border-color: var(--border2); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── PROFILE CARDS ── */
+  .p-card {
+    border-radius: 14px;
+    padding: 28px;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .p-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+  .p-em  { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+  .p-em::before  { background: #10b981; }
+  .p-bl  { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
+  .p-bl::before  { background: #3b82f6; }
+  .p-vi  { background: rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.2); }
+  .p-vi::before  { background: #8b5cf6; }
+  .p-am  { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+  .p-am::before  { background: #f59e0b; }
+
+  .p-card .dim {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 12px; opacity: 0.6;
+  }
+  .p-em .dim { color: #6ee7b7; }
+  .p-bl .dim { color: #93c5fd; }
+  .p-vi .dim { color: #c4b5fd; }
+  .p-am .dim { color: #fcd34d; }
+
+  .p-card h3 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+  .p-card p  { font-size: 13px; color: var(--muted); line-height: 1.75; }
+
+  /* ── ADAPTATION FLOW ── */
+  .adapt-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .af-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    position: relative;
+  }
+  .af-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 54px;
+    bottom: -4px;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(99,102,241,0.4), rgba(99,102,241,0.05));
+  }
+  .af-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .af-num.warn {
+    background: rgba(245,158,11,0.12);
+    border-color: rgba(245,158,11,0.3);
+    color: #fcd34d;
+  }
+  .af-num.success {
+    background: rgba(99,102,241,0.18);
+    border-color: rgba(99,102,241,0.4);
+  }
+  .af-body h4 { font-size: 15px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
+  .af-body p  { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* ── CODE INLINE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: #93c5fd;
+  }
+
+  /* ── BULLET LIST ── */
+  .blist { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .blist li {
+    display: flex; gap: 10px;
+    font-size: 13.5px; color: rgba(255,255,255,0.55);
+    line-height: 1.65;
+  }
+  .blist li .arr { color: #6366f1; font-weight: 700; flex-shrink: 0; }
+
+  /* ── ERROR EXAMPLES ── */
+  .err-row {
+    display: flex; flex-direction: column; gap: 8px;
+    font-size: 13px;
+  }
+  .err-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+  }
+  .err-item.bad  { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.15); }
+  .err-item code { color: #fca5a5; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); }
+  .err-item .desc { color: rgba(255,255,255,0.45); font-size: 12.5px; }
+
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px;
+    color: rgba(255,255,255,0.18);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 900px) {
+    .hero { padding: 40px 24px; }
+    .hero h1 { font-size: 36px; }
+    main { padding: 48px 24px; }
+    .g2, .g3, .g4 { grid-template-columns: 1fr; }
+    .arch-canvas { flex-direction: column; }
+    .chatbot-canvas { flex-direction: column; }
+    .chatbot-col.narrow { flex: 1 1 auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Documentation technique</div>
+    <h1>Architecture<br><span>Bella Bot</span></h1>
+    <p>Plateforme d'apprentissage adaptatif du langage C. Personnalise le contenu en temps réel selon le profil d'apprentissage et les erreurs détectées.</p>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <div class="val">4</div>
+        <div class="lbl">Profils d'apprentissage</div>
+      </div>
+      <div class="meta-item">
+        <div class="val">1</div>
+        <div class="lbl">Leçon (tableaux en C)</div>
+      </div>
+      <div class="meta-item">
+        <div class="val">100%</div>
+        <div class="lbl">Frontend, pas de backend</div>
+      </div>
+      <div class="meta-item">
+        <div class="val">5</div>
+        <div class="lbl">Étapes par leçon</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- STACK -->
+  <section>
+    <div class="section-label">Stack technique</div>
+    <div class="pills">
+      <div class="pill"><span class="dot" style="background:#61dafb"></span>React 19</div>
+      <div class="pill"><span class="dot" style="background:#f97316"></span>Vite 8</div>
+      <div class="pill"><span class="dot" style="background:#38bdf8"></span>React Router v7</div>
+      <div class="pill"><span class="dot" style="background:#38bdf8"></span>Tailwind CSS 4</div>
+      <div class="pill"><span class="dot" style="background:#a78bfa"></span>Animations React (useState / useEffect)</div>
+      <div class="pill"><span class="dot" style="background:#94a3b8"></span>Pas de base de données</div>
+    </div>
+  </section>
+
+  <!-- PAGES -->
+  <section>
+    <div class="section-label">Pages & routes</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Page</th>
+            <th>Rôle</th>
+            <th>Garde</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">/login</td>
+            <td>LoginPage</td>
+            <td>Connexion email/mot de passe + accès démo</td>
+            <td><span class="route-guard">Public</span></td>
+          </tr>
+          <tr>
+            <td class="mono">/profile-select</td>
+            <td>ProfileSelectPage</td>
+            <td>Choix du profil Felder-Silverman</td>
+            <td><span class="route-guard">Auth</span></td>
+          </tr>
+          <tr>
+            <td class="mono">/dashboard</td>
+            <td>DashboardPage</td>
+            <td>Hub élève — profil actif, lancement de la leçon</td>
+            <td><span class="route-guard">Auth + Profil</span></td>
+          </tr>
+          <tr>
+            <td class="mono">/learn</td>
+            <td>LearningPage</td>
+            <td>Interface complète — leçon, éditeur, chatbot Bella</td>
+            <td><span class="route-guard">Auth + Profil</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PROFILS -->
+  <section>
+    <div class="section-label">4 profils d'apprentissage (Felder-Silverman)</div>
+    <div class="grid g2">
+      <div class="p-card p-em">
+        <div class="dim">Actif · Sensoriel</div>
+        <h3>L'Apprenant Pratique</h3>
+        <p>Analogies concrètes du quotidien — boîtes, casiers, vestiaires. Les animations utilisent des métaphores physiques. Le "faire" avant le "comprendre".</p>
+      </div>
+      <div class="p-card p-bl">
+        <div class="dim">Actif · Visuel</div>
+        <h3>Actif + Visuel</h3>
+        <p>Schémas mémoire avec flèche d'accès animée et cliquable. Le visuel précède le code. Chaque case est interactive.</p>
+      </div>
+      <div class="p-card p-vi">
+        <div class="dim">Visuel · Réflexif</div>
+        <h3>Visuel + Réflexif</h3>
+        <p>Vue d'ensemble d'abord, liens abstraits, pointeurs. Le "pourquoi" avant le "comment". Schémas globaux avant le détail.</p>
+      </div>
+      <div class="p-card p-am">
+        <div class="dim">Visuel · Séquentiel</div>
+        <h3>Visuel + Séquentiel</h3>
+        <p>Progression pas à pas, ordre strict. Besoin de voir la structure complète et l'avancement à tout moment.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPOSANTS -->
+  <section>
+    <div class="section-label">Composants principaux</div>
+    <div class="grid g3">
+      <div class="card">
+        <div class="card-label">Éditeur</div>
+        <h3>PracticeEditor</h3>
+        <p>Éditeur de code C. Valide le code par regex et fonctions, détecte les patterns d'erreur, affiche indices progressifs et solution.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Chatbot</div>
+        <h3>ChatPanel — Bella</h3>
+        <p>Chatbot pédagogique. Répond par correspondance de mots-clés dans une base de connaissances. Simule un délai de frappe.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Animations</div>
+        <h3>AnimationBlock</h3>
+        <p>Wrapper qui affiche un composant React interactif en remplacement d'un bloc de code statique. Déclenché sur erreur.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Visualisations</div>
+        <h3>Illustrations</h3>
+        <p>Schémas SVG (cases mémoire, flèche d'accès, accumulateur). Un schéma par étape, adapté au profil.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Code</div>
+        <h3>CodeBlock</h3>
+        <p>Affichage de code C colorisé par regex. 5 types : <code>neutral</code> <code>good</code> <code>bad</code> <code>trace</code> <code>bonus</code>.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="card-label">Contexte global</div>
+        <h3>AuthContext</h3>
+        <p>État global : utilisateur connecté, profil choisi, login/logout. Aucune persistance — tout est en mémoire.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADAPTATION -->
+  <section>
+    <div class="section-label">Systeme d'adaptation pedagogique</div>
+    <div class="grid g2" style="align-items:start; gap: 24px;">
+      <div>
+        <div class="card" style="margin-bottom:12px;">
+          <h3 style="margin-bottom:16px; font-size:15px;">Comment fonctionne l'adaptation</h3>
+          <div class="adapt-flow">
+            <div class="af-step">
+              <div class="af-num">1</div>
+              <div class="af-body">
+                <h4>L'élève écrit du code</h4>
+                <p>Dans l'éditeur de l'exercice, pour l'étape en cours.</p>
+              </div>
+            </div>
+            <div class="af-step">
+              <div class="af-num">2</div>
+              <div class="af-body">
+                <h4>Validation automatique</h4>
+                <p>Les règles de <code>validation[]</code> testent le code. Retour immédiat sur chaque règle (succès ou erreur).</p>
+              </div>
+            </div>
+            <div class="af-step">
+              <div class="af-num warn">3</div>
+              <div class="af-body">
+                <h4>Detection du pattern d'erreur</h4>
+                <p>Les <code>errorPatterns[]</code> analysent le code. La première correspondance uniquement declenche l'adaptation.</p>
+              </div>
+            </div>
+            <div class="af-step">
+              <div class="af-num success">4</div>
+              <div class="af-body">
+                <h4>Recalibrage de toute la leçon</h4>
+                <p>Toutes les étapes restantes reçoivent un contenu adapté à cette erreur spécifique et à ce profil.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="card">
+          <h3 style="margin-bottom:14px; font-size:14px;">Ce qui change apres une erreur</h3>
+          <ul class="blist">
+            <li><span class="arr">→</span> Bannière "rappel" orange en haut de chaque étape suivante</li>
+            <li><span class="arr">→</span> Texte d'intro remplacé par une explication ciblée sur l'erreur</li>
+            <li><span class="arr">→</span> Point-clé reformulé pour corriger le malentendu</li>
+            <li><span class="arr">→</span> Blocs de code supplémentaires insérés (avant ou après)</li>
+            <li><span class="arr">→</span> Animations interactives remplaçant les blocs statiques</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:14px; font-size:14px;">Erreurs detectées (étape 1)</h3>
+          <div class="err-row">
+            <div class="err-item bad"><code>int points = [5]</code> <span class="desc">— "=" avant les crochets</span></div>
+            <div class="err-item bad"><code>int points</code> <span class="desc">— crochets manquants</span></div>
+            <div class="err-item bad"><code>int points[3]</code> <span class="desc">— taille trop petite</span></div>
+            <div class="err-item bad"><code>int points[8]</code> <span class="desc">— taille trop grande</span></div>
+            <div class="err-item bad"><code>points[5]</code> <span class="desc">— accès hors limites</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHEMA ARCHITECTURE -->
+  <section>
+    <div class="section-label">Schema d'architecture simplifie</div>
+    <div class="arch-canvas">
+
+      <!-- Bloc utilisateur -->
+      <div class="user-block">
+        <div class="user-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div class="user-label">Élève</div>
+      </div>
+
+      <!-- Flèche utilisateur → frontend -->
+      <div class="arch-connector">
+        <div class="connector-arrow">
+          <div class="hor-line"></div>›
+        </div>
+        <div class="connector-box">Navigateur<br>SPA</div>
+        <div class="connector-arrow">
+          <div class="hor-line"></div>›
+        </div>
+      </div>
+
+      <!-- BLOC FRONTEND -->
+      <div class="arch-block ab-indigo" style="flex:2.2">
+        <div class="arch-block-header">
+          <span class="title">FRONTEND</span>
+          <span class="subtitle">React 19 · Vite 8 · React Router v7</span>
+        </div>
+        <div class="arch-block-body">
+
+          <!-- Pages -->
+          <div class="arch-section">
+            <div class="arch-section-title">Pages (React Router)</div>
+            <div class="arch-item"><span class="ai-mono">/login</span><span class="ai-desc">Connexion · Admin · Démo</span></div>
+            <div class="arch-item"><span class="ai-mono">/profile-select</span><span class="ai-desc">Choix du profil Felder-Silverman</span></div>
+            <div class="arch-item"><span class="ai-mono">/dashboard</span><span class="ai-desc">Hub élève · lancement leçon</span></div>
+            <div class="arch-item"><span class="ai-mono">/learn</span><span class="ai-desc">Leçon · Éditeur · Chatbot</span></div>
+          </div>
+
+          <!-- Composants /learn -->
+          <div class="arch-section">
+            <div class="arch-section-title">Composants — /learn</div>
+            <div class="arch-item"><span class="ai-name">PracticeEditor</span><span class="ai-desc">Code + validation + erreurs</span></div>
+            <div class="arch-item"><span class="ai-name">ChatPanel</span><span class="ai-desc">Chatbot Bella</span></div>
+            <div class="arch-item"><span class="ai-name">AnimationBlock</span><span class="ai-desc">Animations React interactives</span></div>
+            <div class="arch-item"><span class="ai-name">CodeBlock</span><span class="ai-desc">Affichage code C colorisé</span></div>
+            <div class="arch-item"><span class="ai-name">Illustrations</span><span class="ai-desc">Schémas SVG</span></div>
+          </div>
+
+          <!-- État global -->
+          <div class="arch-section">
+            <div class="arch-section-title">État global · Hooks</div>
+            <div class="arch-item"><span class="ai-name">AuthContext</span><span class="ai-desc">user · profile · login / logout</span></div>
+            <div class="arch-item"><span class="ai-name">useAuth</span><span class="ai-desc">Lecture du contexte global</span></div>
+            <div class="arch-item"><span class="ai-name">useChatBot</span><span class="ai-desc">Logique chatbot · messages · typing</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flèche frontend → données -->
+      <div class="arch-connector">
+        <div class="connector-arrow">
+          <div class="hor-line"></div>›
+        </div>
+        <div class="connector-box">import<br>statique</div>
+        <div class="connector-arrow">
+          <div class="hor-line"></div>›
+        </div>
+      </div>
+
+      <!-- BLOC DONNÉES -->
+      <div class="arch-block ab-green" style="flex:1.4">
+        <div class="arch-block-header">
+          <span class="title">DONNÉES</span>
+          <span class="subtitle">Fichiers JS/JSX — pas de serveur</span>
+        </div>
+        <div class="arch-block-body">
+
+          <div class="arch-section">
+            <div class="arch-section-title">Leçons</div>
+            <div class="arch-item"><span class="ai-mono">arrays-actif.js</span></div>
+            <div class="arch-item"><span class="ai-mono">arrays-actif-visuel.js</span></div>
+            <div class="arch-item"><span class="ai-mono">arrays-visuel-sequentiel.js</span></div>
+            <div class="arch-item"><span class="ai-mono">arrays-visuel-intuitif.js</span></div>
+          </div>
+
+          <div class="arch-section">
+            <div class="arch-section-title">Profils & Chatbot</div>
+            <div class="arch-item"><span class="ai-mono">profiles.js</span></div>
+            <div class="arch-item"><span class="ai-mono">chatbot-arrays.js</span><span class="ai-desc">Base KB</span></div>
+          </div>
+
+          <div class="arch-section">
+            <div class="arch-section-title">Animations</div>
+            <div class="arch-item"><span class="ai-mono">ActifAnimations.jsx</span></div>
+            <div class="arch-item"><span class="ai-mono">ActifVisuelAnimations.jsx</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SCHEMA CHATBOT -->
+  <section>
+    <div class="section-label">Schema du chatbot Bella</div>
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 40px; overflow-x: auto;">
+
+      <div class="chatbot-canvas">
+
+        <!-- Colonne principale (flux) -->
+        <div class="chatbot-col">
+
+          <!-- 1. Message -->
+          <div class="cb-node n-blue">
+            <h4>Élève envoie un message</h4>
+            <p>Texte libre ou bouton de question rapide — ChatPanel</p>
+          </div>
+          <div class="cb-arrow-down">↓</div>
+
+          <!-- 2. Normalisation -->
+          <div class="cb-node n-ghost">
+            <h4>normalize(input)</h4>
+            <p>Minuscules · sans accents · ponctuation retirée → liste de mots</p>
+          </div>
+          <div class="cb-arrow-down">↓</div>
+
+          <!-- 3. Scoring -->
+          <div class="cb-node n-indigo">
+            <h4>findBestMatch() — score par entrée KB</h4>
+            <p>
+              Pour chaque entrée de la base :
+              <br>· phrase exacte trouvée → <span class="cb-score pos">+3</span>
+              <br>· mot individuel (longueur &gt; 2) → <span class="cb-score pos">+1</span>
+              <br>L'entrée avec le score le plus élevé est retenue.
+            </p>
+          </div>
+          <div class="cb-arrow-down">↓</div>
+
+          <!-- 4. Décision -->
+          <div class="cb-decision">score ≥ 1 ?</div>
+          <div class="cb-arrow-down" style="font-size:11px; color:var(--muted); gap:4px; flex-direction:row; justify-content:flex-start; padding-left:20px; padding-top:4px; padding-bottom:4px;">
+            <span style="color:rgba(255,255,255,0.18)">↙</span>
+            <span style="flex:1; text-align:center; font-size:10px; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase;">OUI / NON</span>
+            <span style="color:rgba(255,255,255,0.18)">↘</span>
+          </div>
+
+          <!-- 5. Branches -->
+          <div style="display:flex; gap:12px;">
+            <div class="cb-node n-green" style="flex:1">
+              <h4>Réponse KB</h4>
+              <p>texte + exemple code + tip + suggestions de questions</p>
+            </div>
+            <div class="cb-node n-amber" style="flex:1">
+              <h4>DEFAULT_RESPONSE</h4>
+              <p>Message générique, invite à reformuler</p>
+            </div>
+          </div>
+          <div class="cb-arrow-down">↓</div>
+
+          <!-- 6. Délai -->
+          <div class="cb-node n-ghost">
+            <h4>setTimeout — 700 à 1100 ms</h4>
+            <p>"Bella écrit…" affiché pendant ce délai simulé</p>
+          </div>
+          <div class="cb-arrow-down">↓</div>
+
+          <!-- 7. Affichage -->
+          <div class="cb-node n-blue">
+            <h4>Réponse affichée dans le ChatPanel</h4>
+            <p>Texte markdown · bloc code C · tip · boutons de suggestions cliquables</p>
+          </div>
+
+        </div>
+
+        <!-- Colonne KB (à droite) -->
+        <div class="chatbot-col narrow">
+          <div class="cb-node n-green" style="position: sticky; top: 0;">
+            <h4>Base de connaissances</h4>
+            <p style="margin-top:8px; font-size:11px; line-height:1.8;">
+              <code style="font-size:10px;">keywords[]</code><br>
+              → tableau<br>
+              → indices<br>
+              → taille<br>
+              → boucle<br>
+              → accès<br>
+              → modification<br>
+              → hors limites<br>
+              → somme<br>
+              → moyenne<br>
+              <span style="color:rgba(255,255,255,0.25)">… (n entrées)</span>
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>Bella Bot &mdash; Architecture &mdash; 2026</footer>
+
+</body>
+</html>

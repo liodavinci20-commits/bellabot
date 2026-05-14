@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Questions élèves — Entraînement Bella Bot</title>
+</head>
+<body>
+
+<h1>Questions fréquentes d'élèves (16 ans) — Tableaux en C</h1>
+<p>
+  Ce document liste 15 questions par section que des élèves de 16 ans posent naturellement
+  lors de l'apprentissage des tableaux en C. Ces questions servent à entraîner Bella Bot
+  à reconnaître et répondre aux incompréhensions conceptuelles réelles.
+  Chaque section correspond à l'identifiant de step utilisé dans les leçons du projet.
+</p>
+
+<!-- ============================================================ -->
+<section id="declaration">
+
+  <h2>Section 1 — Déclaration d'un tableau</h2>
+  <p>Correspondance leçon : step id="declaration" — "Pourquoi et comment déclarer un tableau"</p>
+
+  <ol>
+    <li>C'est quoi exactement un tableau, c'est comme plusieurs variables en même temps ?</li>
+    <li>Pourquoi on doit écrire le nombre de cases à l'avance, on peut pas le changer après ?</li>
+    <li>Pourquoi ça s'écrit <code>int points[5]</code> et pas juste <code>int points = 5</code> ?</li>
+    <li>À quoi ça sert les crochets, pourquoi pas des parenthèses ?</li>
+    <li>Si je déclare <code>int points[5]</code>, il y a combien de cases en vrai ?</li>
+    <li>Pourquoi les indices commencent à 0 et pas à 1 comme dans la vie normale ?</li>
+    <li>C'est quoi la différence entre déclarer un tableau et l'initialiser ?</li>
+    <li>Si je fais <code>int points[5] = {1, 2, 3}</code>, les deux dernières cases elles valent quoi ?</li>
+    <li>Est-ce que je peux faire un tableau de lettres ou seulement de chiffres ?</li>
+    <li>Pourquoi il faut mettre <code>int</code> avant, c'est pas évident que c'est un tableau de nombres ?</li>
+    <li>C'est quoi une taille trop petite pour un tableau, ça fait quoi concrètement ?</li>
+    <li>Est-ce que le nom du tableau ça peut être n'importe quoi comme pour une variable ?</li>
+    <li>Si je déclare un tableau dans une fonction, est-ce qu'il existe aussi dans le reste du programme ?</li>
+    <li>Pourquoi mon prof dit "réserver de la mémoire", c'est quoi la mémoire dont il parle ?</li>
+    <li>C'est quoi la différence entre <code>int points[5]</code> et <code>int points[] = {1,2,3,4,5}</code> ?</li>
+  </ol>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="acces">
+
+  <h2>Section 2 — Lire et modifier une case précise</h2>
+  <p>Correspondance leçon : step id="acces" — "Lire et modifier une case précise"</p>
+
+  <ol>
+    <li>Comment je fais pour lire juste une case du tableau, pas tout le tableau ?</li>
+    <li>Si le tableau s'appelle <code>points</code> et je veux la 3ème valeur, j'écris <code>points[3]</code> ou <code>points[2]</code> ?</li>
+    <li>Pourquoi quand j'écris <code>points[5]</code> pour un tableau de 5 cases ça ne marche pas ?</li>
+    <li>C'est quoi la différence entre lire une case et modifier une case ?</li>
+    <li>Si je fais <code>points[2] = 10</code>, ça efface ce qu'il y avait avant ou ça s'ajoute ?</li>
+    <li>Comment je sais quelle case je suis en train de modifier si j'utilise une variable comme indice ?</li>
+    <li>Pourquoi mon programme plante si j'accède à <code>points[10]</code> dans un tableau de 5 cases ?</li>
+    <li>Est-ce que je peux copier une case dans une autre variable normale ?</li>
+    <li>C'est quoi "hors limites", pourquoi le C ne me prévient pas lui-même ?</li>
+    <li>Pourquoi <code>printf(points[1])</code> ça ne marche pas, il faut écrire quoi exactement ?</li>
+    <li>Quand je modifie une case, est-ce que les autres cases changent aussi ?</li>
+    <li>C'est quoi un indice, c'est obligé que ce soit un nombre entier ?</li>
+    <li>Est-ce que je peux utiliser une variable comme indice, genre <code>points[i]</code> ?</li>
+    <li>Si j'affiche <code>points[0]</code> avant d'avoir mis une valeur dedans, ça affiche quoi ?</li>
+    <li>Pourquoi la dernière case c'est <code>points[4]</code> et pas <code>points[5]</code> si le tableau fait 5 ?</li>
+  </ol>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="remplir">
+
+  <h2>Section 3 — Remplir un tableau avec scanf</h2>
+  <p>Correspondance leçon : step id="remplir" — "Remplir un tableau avec scanf"</p>
+
+  <ol>
+    <li>Pourquoi on utilise une boucle pour remplir le tableau, on peut pas tout mettre d'un coup ?</li>
+    <li>C'est quoi <code>scanf</code>, c'est comme <code>printf</code> mais à l'envers ?</li>
+    <li>Pourquoi il faut écrire <code>&amp;points[i]</code> avec le <code>&amp;</code>, c'est obligé ?</li>
+    <li>Si l'utilisateur tape plus de valeurs que le tableau peut en contenir, ça fait quoi ?</li>
+    <li>Comment la boucle sait quand s'arrêter de demander des valeurs ?</li>
+    <li>Pourquoi <code>i</code> commence à 0 dans la boucle et pas à 1 ?</li>
+    <li>Est-ce que je peux remplir un tableau sans boucle si j'ai seulement 3 valeurs ?</li>
+    <li>C'est quoi le <code>%d</code> dans le scanf, ça veut dire quoi ?</li>
+    <li>Comment je fais si je veux que l'utilisateur entre les valeurs une par une avec un message à chaque fois ?</li>
+    <li>Si je remplis le tableau dans une boucle mais que je mets <code>i</code> au lieu de <code>i++</code>, ça boucle à l'infini ?</li>
+    <li>Pourquoi quand j'affiche le tableau juste après le scanf les valeurs sont correctes ?</li>
+    <li>Est-ce que je peux remplir seulement quelques cases du tableau et laisser les autres vides ?</li>
+    <li>C'est quoi la différence entre initialiser un tableau à la déclaration et le remplir avec scanf ?</li>
+    <li>Si l'utilisateur tape une lettre au lieu d'un chiffre dans le scanf, qu'est-ce qui se passe ?</li>
+    <li>Pourquoi la condition de la boucle c'est <code>i &lt; 5</code> et pas <code>i &lt;= 5</code> pour un tableau de 5 cases ?</li>
+  </ol>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="recherche">
+
+  <h2>Section 4 — Chercher une valeur, le minimum et le maximum</h2>
+  <p>Correspondance leçon : step id="recherche" — "Chercher une valeur, le min et le max"</p>
+
+  <ol>
+    <li>Comment on fait pour trouver la plus grande valeur dans un tableau, on compare comment ?</li>
+    <li>Pourquoi on initialise le maximum avec <code>tab[0]</code> et pas avec 0 ?</li>
+    <li>Si tous les nombres du tableau sont négatifs, l'algorithme du maximum marche encore ?</li>
+    <li>C'est quoi la différence entre chercher une valeur et chercher son indice ?</li>
+    <li>Comment je sais à quelle position se trouve le maximum une fois que je l'ai trouvé ?</li>
+    <li>Pourquoi on fait une boucle pour chercher, on peut pas juste regarder le tableau directement ?</li>
+    <li>Si le maximum apparaît deux fois dans le tableau, l'algorithme retourne lequel ?</li>
+    <li>Est-ce que l'algorithme du minimum c'est exactement pareil que le maximum mais à l'envers ?</li>
+    <li>Comment je fais pour chercher si une valeur précise existe dans le tableau ?</li>
+    <li>Qu'est-ce que ça veut dire "parcourir un tableau", c'est pas juste le lire ?</li>
+    <li>Pourquoi dans la boucle on compare <code>tab[i]</code> avec <code>max</code> et pas avec <code>tab[i-1]</code> ?</li>
+    <li>Si je veux trouver à la fois le min et le max, je fais deux boucles ou une seule ?</li>
+    <li>Comment la boucle peut savoir qu'elle a trouvé la bonne valeur et s'arrêter ?</li>
+    <li>C'est quoi un "flag" ou un "sentinel" dont parle mon prof quand il parle de recherche ?</li>
+    <li>Pourquoi on utilise une variable <code>max</code> séparée et pas juste <code>tab[0]</code> directement pendant toute la boucle ?</li>
+  </ol>
+
+</section>
+
+<!-- ============================================================ -->
+<section id="parcours">
+
+  <h2>Section 5 — Somme, moyenne et filtres sur un tableau</h2>
+  <p>Correspondance leçon : step id="parcours" — "Somme, moyenne et filtres sur un tableau"</p>
+
+  <ol>
+    <li>Comment je calcule la somme de toutes les valeurs d'un tableau ?</li>
+    <li>Pourquoi on initialise la variable somme à 0 avant la boucle et pas à <code>tab[0]</code> ?</li>
+    <li>Comment on calcule la moyenne si on a déjà la somme, c'est juste une division ?</li>
+    <li>Pourquoi il faut faire <code>(float)</code> ou diviser par <code>5.0</code> pour avoir une moyenne avec des décimales ?</li>
+    <li>C'est quoi un filtre sur un tableau, par exemple afficher que les valeurs positives ?</li>
+    <li>Comment je compte le nombre d'éléments qui respectent une condition dans mon tableau ?</li>
+    <li>Si je veux afficher seulement les nombres pairs du tableau, comment j'écris la condition ?</li>
+    <li>Est-ce que je peux modifier les valeurs d'un tableau pendant que je le parcours ?</li>
+    <li>Comment je fais pour afficher le tableau en ordre inversé sans le retourner ?</li>
+    <li>C'est quoi la différence entre afficher un tableau et calculer quelque chose avec le tableau ?</li>
+    <li>Si le tableau est vide (toutes les cases à 0), la somme c'est 0 et la moyenne c'est 0 aussi ?</li>
+    <li>Comment je sais combien d'éléments vérifient ma condition, il faut un compteur séparé ?</li>
+    <li>Est-ce que je peux avoir deux boucles qui parcourent le même tableau en même temps ?</li>
+    <li>Pourquoi pour la somme on fait <code>somme = somme + tab[i]</code> et pas juste <code>somme + tab[i]</code> ?</li>
+    <li>Comment je fais pour copier les valeurs filtrées dans un nouveau tableau ?</li>
+  </ol>
+
+</section>
+
+</body>
+</html>

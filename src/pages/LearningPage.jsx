@@ -633,7 +633,7 @@ export default function LearningPage() {
             <div className="relative h-full bg-panel border border-violet-500/20
               rounded-t-3xl sm:rounded-3xl
               shadow-2xl shadow-violet-900/40 overflow-hidden flex flex-col">
-              <ChatPanel onClose={() => setShowChat(false)} />
+              <ChatPanel onClose={() => setShowChat(false)} currentSection={step.id} />
             </div>
           </div>
         </>

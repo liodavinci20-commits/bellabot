@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error Patterns — AdaptativeCBot Documentation</title>
+  <style>
+    :root {
+      --bg: #060d1f;
+      --bg-panel: #070e22;
+      --bg-card: #0d1525;
+      --border: rgba(255,255,255,0.08);
+      --text: #e2e8f0;
+      --text-dim: rgba(255,255,255,0.5);
+      --accent-blue: #60a5fa;
+      --accent-violet: #a78bfa;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-red: #f87171;
+      --tag-bg: rgba(255,255,255,0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .main { flex: 1; padding: 40px 48px; max-width: 960px; }
+
+    /* ── Sidebar ── */
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .sidebar-section { margin-bottom: 20px; }
+    .sidebar-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+    .sidebar-link {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .sidebar-link.active { background: rgba(99,102,241,0.15); color: var(--accent-violet); }
+    .badge-count {
+      display: inline-block;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 10px;
+      padding: 1px 6px;
+      margin-left: 6px;
+      color: var(--text-dim);
+    }
+
+    /* ── Header ── */
+    .page-header { margin-bottom: 48px; }
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #818cf8, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .page-header p { color: var(--text-dim); max-width: 600px; line-height: 1.7; }
+
+    /* ── Summary table ── */
+    .summary-table-wrap {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+    .summary-table-title {
+      padding: 14px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(255,255,255,0.02);
+    }
+    td {
+      padding: 10px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px;
+    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .profile-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .chip-actif      { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+    .chip-av         { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+    .chip-reflexif   { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+    .chip-sequentiel { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+
+    .error-type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-no-brackets { background: rgba(248,113,113,0.15); color: #f87171; }
+    .badge-size-small  { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .badge-size-large  { background: rgba(139,92,246,0.12); color: #c4b5fd; }
+    .badge-wrong-syntax{ background: rgba(249,115,22,0.12); color: #fb923c; }
+    .badge-size-wrong  { background: rgba(248,113,113,0.12); color: #fca5a5; }
+
+    code {
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #93c5fd;
+    }
+
+    /* ── Section ── */
+    .profile-section { margin-bottom: 64px; }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .profile-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .icon-actif      { background: rgba(59,130,246,0.15); }
+    .icon-av         { background: rgba(139,92,246,0.15); }
+    .icon-reflexif   { background: rgba(52,211,153,0.15); }
+    .icon-sequentiel { background: rgba(251,191,36,0.15); }
+    .profile-header-text h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .profile-header-text p { font-size: 13px; color: var(--text-dim); }
+
+    /* ── Pattern card ── */
+    .pattern-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .pattern-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .pattern-card-header:hover { background: rgba(255,255,255,0.02); }
+    .pattern-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .pattern-card-title { flex: 1; }
+    .pattern-card-title h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    .pattern-card-title .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .chevron {
+      color: var(--text-dim);
+      font-size: 16px;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .pattern-card.open .chevron { transform: rotate(90deg); }
+
+    .pattern-card-body {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 20px;
+    }
+    .pattern-card.open .pattern-card-body { display: block; }
+
+    /* ── Body sections ── */
+    .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 700px) { .body-grid { grid-template-columns: 1fr; } }
+    .body-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .body-item-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .body-item p { font-size: 13px; line-height: 1.65; color: var(--text); }
+
+    /* ── Detection block ── */
+    .detect-block {
+      background: var(--bg-card);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .detect-block-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #818cf8;
+      margin-bottom: 10px;
+    }
+    .detect-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .detect-row:last-child { margin-bottom: 0; }
+    .detect-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .dot-red    { background: #f87171; }
+    .dot-green  { background: #34d399; }
+    .detect-row p { font-size: 12.5px; color: var(--text-dim); }
+    .detect-row code { font-size: 11.5px; }
+
+    /* ── Code test block ── */
+    .test-block {
+      background: var(--bg-card);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .test-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(52,211,153,0.05);
+      border-bottom: 1px solid rgba(52,211,153,0.1);
+    }
+    .test-block-header span { font-size: 11px; font-weight: 600; color: #34d399; text-transform: uppercase; letter-spacing: 0.07em; }
+    .copy-btn {
+      background: rgba(52,211,153,0.1);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: 4px;
+      color: #34d399;
+      font-size: 11px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: rgba(52,211,153,0.2); }
+    .test-block pre {
+      padding: 14px;
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+    .test-block .comment { color: rgba(255,255,255,0.3); font-style: italic; }
+    .test-block .kw { color: #93c5fd; }
+    .test-block .type { color: #86efac; }
+    .test-block .num { color: #fbbf24; }
+    .test-block .str { color: #fca5a5; }
+
+    /* ── Adapted steps ── */
+    .adapted-steps-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .steps-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .step-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(99,102,241,0.12);
+      color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .step-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: #818cf8; }
+
+    /* ── Message box ── */
+    .message-box {
+      background: rgba(251,191,36,0.05);
+      border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .message-box-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .message-box p { font-size: 13px; color: var(--text); line-height: 1.65; }
+
+    /* ── How it works ── */
+    .how-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+    .how-section h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .how-steps { counter-reset: step-counter; }
+    .how-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      counter-increment: step-counter;
+    }
+    .how-step:last-child { margin-bottom: 0; }
+    .how-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(99,102,241,0.2);
+      border: 1px solid rgba(99,102,241,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #a5b4fc;
+      flex-shrink: 0;
+    }
+    .how-step-text { padding-top: 3px; font-size: 13px; line-height: 1.65; color: var(--text-dim); }
+    .how-step-text strong { color: var(--text); }
+
+    /* ── Regex explanation ── */
+    .regex-block {
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 11.5px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin: 10px 0;
+      line-height: 1.8;
+    }
+    .rx-pattern { color: #f87171; }
+    .rx-comment { color: rgba(255,255,255,0.35); font-style: italic; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+    /* ── Intro chip ── */
+    .intro-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .intro-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-title">AdaptativeCBot</div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Navigation</div>
+      <a href="#comment-ca-marche" class="sidebar-link">Comment ça marche</a>
+      <a href="#recap" class="sidebar-link">Tableau récapitulatif</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Profils</div>
+      <a href="#actif" class="sidebar-link">
+        ⚡ Actif·Sensoriel <span class="badge-count">3</span>
+      </a>
+      <a href="#actif-visuel" class="sidebar-link">
+        🎨 Actif·Visuel <span class="badge-count">4</span>
+      </a>
+      <a href="#reflexif" class="sidebar-link">
+        🧠 Visuel·Réflexif <span class="badge-count">2</span>
+      </a>
+      <a href="#sequentiel" class="sidebar-link">
+        📐 Visuel·Séquentiel <span class="badge-count">3</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Types d'erreurs</div>
+      <a href="#" class="sidebar-link" style="font-size:12px;">
+        <span class="error-type-badge badge-no-brackets">Sans crochets</span>
+      </a>
+      <a href="#" class="sidebar-link" style="font-size:12px;">
+        <span class="error-type-badge badge-size-small">Taille trop petite</span>
+      </a>
+      <a href="#" class="sidebar-link" style="font-size:12px;">
+        <span class="error-type-badge badge-size-large">Taille trop grande</span>
+      </a>
+      <a href="#" class="sidebar-link" style="font-size:12px;">
+        <span class="error-type-badge badge-wrong-syntax">Mauvaise syntaxe</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1>Error Patterns — Documentation</h1>
+      <p>
+        Résumé de tous les patterns d'erreurs détectés par AdaptativeCBot dans l'éditeur Python.
+        Chaque pattern adapte le feedback pédagogique au profil d'apprentissage de l'élève.
+      </p>
+      <div class="intro-chips">
+        <span class="intro-chip chip-actif">⚡ Actif·Sensoriel</span>
+        <span class="intro-chip chip-av">🎨 Actif·Visuel</span>
+        <span class="intro-chip chip-reflexif">🧠 Visuel·Réflexif</span>
+        <span class="intro-chip chip-sequentiel">📐 Visuel·Séquentiel</span>
+      </div>
+    </div>
+
+    <!-- Comment ça marche -->
+    <section id="comment-ca-marche" class="how-section">
+      <h2>⚙️ Comment ça marche</h2>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <div class="how-step-text">
+            <strong>L'élève tape du code dans l'éditeur.</strong> À chaque frappe, le contenu complet de l'éditeur est passé aux <code>errorPatterns</code> de l'exercice courant.
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <div class="how-step-text">
+            <strong>La fonction <code>detect(code)</code> est évaluée</strong> pour chaque pattern. C'est une expression régulière (regex) testée sur le code en temps réel.
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <div class="how-step-text">
+            <strong>Si <code>detect</code> retourne <code>true</code></strong>, le pattern est actif. Le <code>message</code> et l'<code>analogy</code> sont affichés dans le panneau de feedback.
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">4</div>
+          <div class="how-step-text">
+            <strong>Les <code>adaptedSteps</code> sont déclenchés</strong> : les étapes du cours correspondant à l'étape active de l'élève reçoivent un contenu pédagogique adapté à son profil (reminder + intro + keyPoint personnalisés).
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">5</div>
+          <div class="how-step-text">
+            <strong>Le pattern disparaît</strong> automatiquement dès que <code>detect</code> retourne <code>false</code> (l'élève a corrigé l'erreur).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tableau récap -->
+    <section id="recap">
+      <div class="summary-table-wrap">
+        <div class="summary-table-title">📋 Vue d'ensemble — tous les patterns</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Profil</th>
+              <th>ID Pattern</th>
+              <th>Type d'erreur</th>
+              <th>Condition de déclenchement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="profile-chip chip-actif">⚡ Actif</span></td>
+              <td><code>eq1-no-size</code></td>
+              <td><span class="error-type-badge badge-no-brackets">Sans crochets</span></td>
+              <td><code>int points</code> sans <code>[</code></td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-actif">⚡ Actif</span></td>
+              <td><code>eq1-size-too-small</code></td>
+              <td><span class="error-type-badge badge-size-small">Taille &lt; 5</span></td>
+              <td><code>int points[n]</code> avec n &lt; 5</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-actif">⚡ Actif</span></td>
+              <td><code>eq1-size-too-large</code></td>
+              <td><span class="error-type-badge badge-size-large">Taille &gt; 5</span></td>
+              <td><code>int points[n]</code> avec n &gt; 5</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-av">🎨 Actif·Visuel</span></td>
+              <td><code>eq1-wrong-equals-syntax</code></td>
+              <td><span class="error-type-badge badge-wrong-syntax">= avant [</span></td>
+              <td><code>int points = [5]</code></td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-av">🎨 Actif·Visuel</span></td>
+              <td><code>eq1-missing-brackets</code></td>
+              <td><span class="error-type-badge badge-no-brackets">Sans crochets</span></td>
+              <td><code>int points</code> sans <code>[</code></td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-av">🎨 Actif·Visuel</span></td>
+              <td><code>eq1-size-too-small</code></td>
+              <td><span class="error-type-badge badge-size-small">Taille &lt; 5</span></td>
+              <td><code>int points[n]</code> avec n &lt; 5</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-av">🎨 Actif·Visuel</span></td>
+              <td><code>eq1-size-too-large</code></td>
+              <td><span class="error-type-badge badge-size-large">Taille &gt; 5</span></td>
+              <td><code>int points[n]</code> avec n &gt; 5</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-reflexif">🧠 Visuel·Réflexif</span></td>
+              <td><code>eq1-no-brackets</code></td>
+              <td><span class="error-type-badge badge-no-brackets">Sans crochets</span></td>
+              <td>Aucun <code>int nom[n]</code> dans le code</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-reflexif">🧠 Visuel·Réflexif</span></td>
+              <td><code>eq1-size-not-7</code></td>
+              <td><span class="error-type-badge badge-size-wrong">Taille ≠ 7</span></td>
+              <td><code>int nom[n]</code> avec n ≠ 7</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-sequentiel">📐 Visuel·Séquentiel</span></td>
+              <td><code>eq1-scores-no-brackets</code></td>
+              <td><span class="error-type-badge badge-no-brackets">Sans crochets</span></td>
+              <td><code>int scores</code> sans <code>[</code></td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-sequentiel">📐 Visuel·Séquentiel</span></td>
+              <td><code>eq1-scores-too-small</code></td>
+              <td><span class="error-type-badge badge-size-small">Taille &lt; 6</span></td>
+              <td><code>int scores[n]</code> avec n &lt; 6</td>
+            </tr>
+            <tr>
+              <td><span class="profile-chip chip-sequentiel">📐 Visuel·Séquentiel</span></td>
+              <td><code>eq1-scores-too-large</code></td>
+              <td><span class="error-type-badge badge-size-large">Taille &gt; 6</span></td>
+              <td><code>int scores[n]</code> avec n &gt; 6</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PROFIL 1 — Actif·Sensoriel
+    ════════════════════════════════════════════ -->
+    <section id="actif" class="profile-section">
+      <div class="profile-header">
+        <div class="profile-icon icon-actif">⚡</div>
+        <div class="profile-header-text">
+          <h2 style="color: #60a5fa;">Actif·Sensoriel</h2>
+          <p>Fichier : <code>arrays-actif.js</code> · Variable : <code>points[5]</code> · 3 patterns sur l'exercice 1</p>
+        </div>
+      </div>
+
+      <!-- P1 -->
+      <div class="pattern-card open" id="p-actif-1">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">1</div>
+          <div class="pattern-card-title">
+            <h3>Tableau déclaré sans taille</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-no-brackets">Sans crochets</span>
+              <code>eq1-no-size</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p>Le code contient <code>int points</code> <strong>sans</strong> crochets juste après</p>
+            </div>
+            <div class="detect-row">
+              <div class="detect-dot dot-green"></div>
+              <p>Regex qui déclenche : <code>/int\s+points\b/</code> + absence de <code>/int\s+points\s*\[/</code></p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points</span>  <span class="rx-comment">→ déclenche le pattern</span><br>
+              <span class="rx-pattern">int points[5]</span>  <span class="rx-comment">→ ne déclenche PAS (crochets présents)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as écrit "int points" sans crochets. En C, un tableau DOIT avoir une taille entre crochets : <code>int points[5]</code>. Sans ça, le programme ne sait pas combien de cases réserver en mémoire.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Commander "des billets de cinéma" sans dire combien. Le guichetier ne peut rien faire. Avec <code>int points[5]</code>, tu dis exactement : "réserve-moi 5 cases en mémoire".</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>remplir</span>
+                <span class="step-chip"><span class="dot"></span>recherche</span>
+                <span class="step-chip"><span class="dot"></span>parcours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Tapez ceci dans l'éditeur — le pattern se déclenche immédiatement</span>
+<span class="type">int</span> points;
+<span class="comment">// ↑ Pas de [5] → pattern actif</span>
+
+<span class="comment">// Pour désactiver le pattern :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>, <span class="num">5</span>, <span class="num">20</span>};
+<span class="comment">// ↑ Crochets présents → pattern inactif</span></pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div class="pattern-card" id="p-actif-2">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">2</div>
+          <div class="pattern-card-title">
+            <h3>Taille déclarée trop petite</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-small">Taille &lt; 5</span>
+              <code>eq1-size-too-small</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p>Le code contient <code>int points[n]</code> avec un <code>n</code> strictement inférieur à 5</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points[3]</span>  <span class="rx-comment">→ déclenche (3 &lt; 5)</span><br>
+              <span class="rx-pattern">int points[4]</span>  <span class="rx-comment">→ déclenche (4 &lt; 5)</span><br>
+              <span class="rx-pattern">int points[5]</span>  <span class="rx-comment">→ ne déclenche PAS (exact)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré points avec une taille inférieure à 5 pour stocker 5 valeurs. En C, la taille doit correspondre exactement au nombre de valeurs. Les cases manquantes n'ont nulle part où aller — elles écrasent la mémoire voisine.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Commander une boîte de 4 œufs pour en mettre 5. Le 5ème tombe hors de la boîte — et en C, ça ne plante pas toujours : il écrase silencieusement une autre donnée.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>remplir</span>
+                <span class="step-chip"><span class="dot"></span>recherche</span>
+                <span class="step-chip"><span class="dot"></span>parcours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Taille trop petite — pattern actif</span>
+<span class="type">int</span> points[<span class="num">3</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>};
+
+<span class="comment">// Variante :</span>
+<span class="type">int</span> points[<span class="num">4</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>, <span class="num">5</span>};
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>, <span class="num">5</span>, <span class="num">20</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P3 -->
+      <div class="pattern-card" id="p-actif-3">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">3</div>
+          <div class="pattern-card-title">
+            <h3>Taille déclarée trop grande</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-large">Taille &gt; 5</span>
+              <code>eq1-size-too-large</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p>Le code contient <code>int points[n]</code> avec un <code>n</code> strictement supérieur à 5</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points[6]</span>  <span class="rx-comment">→ déclenche (6 &gt; 5)</span><br>
+              <span class="rx-pattern">int points[10]</span> <span class="rx-comment">→ déclenche (10 &gt; 5)</span><br>
+              <span class="rx-pattern">int points[5]</span>  <span class="rx-comment">→ ne déclenche PAS (exact)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent en mémoire mais contiennent des valeurs imprévisibles — pas 0.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Réserver 6 cases dans le schéma alors qu'il n'en montre que 5. La 6ème case existe en mémoire, mais son contenu est ce que laissé là par le programme précédent.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>calculs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Taille trop grande — pattern actif</span>
+<span class="type">int</span> points[<span class="num">7</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>, <span class="num">5</span>, <span class="num">20</span>};
+<span class="comment">// Les cases [5] et [6] contiennent des valeurs aléatoires !</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">12</span>, <span class="num">8</span>, <span class="num">15</span>, <span class="num">5</span>, <span class="num">20</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PROFIL 2 — Actif·Visuel
+    ════════════════════════════════════════════ -->
+    <section id="actif-visuel" class="profile-section">
+      <div class="profile-header">
+        <div class="profile-icon icon-av">🎨</div>
+        <div class="profile-header-text">
+          <h2 style="color: #a78bfa;">Actif·Visuel</h2>
+          <p>Fichier : <code>arrays-actif-visuel.js</code> · Variable : <code>points[5]</code> · 4 patterns sur l'exercice 1</p>
+        </div>
+      </div>
+
+      <!-- P1 -->
+      <div class="pattern-card" id="p-av-1">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">1</div>
+          <div class="pattern-card-title">
+            <h3>Signe "=" placé avant les crochets</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-wrong-syntax">Mauvaise syntaxe</span>
+              <code>eq1-wrong-equals-syntax</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p>Le code contient <code>int points = [</code> (le "=" est entre le nom et les crochets)</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points = [5]</span>  <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int points=[5]</span>    <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int points[5]</span>     <span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as écrit <code>int points = [5]</code> mais la taille se colle directement après le nom, sans "=" entre les deux. Le "=" sert uniquement à initialiser les valeurs, pas à définir la structure. Correction : <code>int points[5]</code></p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>En C on dit "tableau-à-5-cases" en collant [5] au nom — comme on écrit "boîte5" sans espace. Le = n'appartient pas à la structure, seulement aux valeurs.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>calculs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Le "=" est avant le crochet — pattern actif</span>
+<span class="type">int</span> points = [<span class="num">5</span>];
+
+<span class="comment">// Correction — crochets collés au nom :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>, <span class="num">18</span>, <span class="num">5</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div class="pattern-card" id="p-av-2">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">2</div>
+          <div class="pattern-card-title">
+            <h3>Déclaration sans crochets</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-no-brackets">Sans crochets</span>
+              <code>eq1-missing-brackets</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int points</code> apparaît sans être immédiatement suivi de <code>[</code></p>
+            </div>
+            <div class="detect-row">
+              <div class="detect-dot dot-green"></div>
+              <p>Regex : <code>/int\s+points(?!\s*\[)/i</code> — lookahead négatif pour exclure les crochets</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points;</span>     <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int points = 5;</span> <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int points[5]</span>   <span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré "int points" comme une variable simple. Un tableau nécessite des crochets avec sa taille pour réserver plusieurs cases. Correction : <code>int points[5]</code> — les [5] signifient "réserve 5 cases en mémoire".</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Un vestiaire. "int tab" c'est un seul casier. "int tab[5]" c'est une rangée de 5 casiers numérotés [0] à [4]. Les crochets créent la rangée de cases.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>calculs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Variable simple au lieu de tableau — pattern actif</span>
+<span class="type">int</span> points;
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>, <span class="num">18</span>, <span class="num">5</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P3 -->
+      <div class="pattern-card" id="p-av-3">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">3</div>
+          <div class="pattern-card-title">
+            <h3>Taille trop petite — le schéma a 5 cases</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-small">Taille &lt; 5</span>
+              <code>eq1-size-too-small</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int points[n]</code> avec n &lt; 5</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points[4]</span>  <span class="rx-comment">→ déclenche (4 &lt; 5)</span><br>
+              <span class="rx-pattern">int points[5]</span>  <span class="rx-comment">→ ne déclenche PAS (exact)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré une taille inférieure à 5 mais le schéma montre 5 cases. La taille doit correspondre exactement au nombre de cases dans le schéma. Avec une taille trop petite, la dernière valeur n'a nulle part où aller.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Commander une boîte de 4 cases pour un schéma qui en montre 5. La 5ème case du schéma n'existe pas en mémoire — et le C ne te prévient pas.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>calculs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="type">int</span> points[<span class="num">3</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>};
+<span class="comment">// ↑ 3 &lt; 5 → pattern actif</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>, <span class="num">18</span>, <span class="num">5</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P4 -->
+      <div class="pattern-card" id="p-av-4">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">4</div>
+          <div class="pattern-card-title">
+            <h3>Taille trop grande — case fantôme hors schéma</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-large">Taille &gt; 5</span>
+              <code>eq1-size-too-large</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int points[n]</code> avec n &gt; 5</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int points[6]</span>  <span class="rx-comment">→ déclenche (6 &gt; 5)</span><br>
+              <span class="rx-pattern">int points[5]</span>  <span class="rx-comment">→ ne déclenche PAS (exact)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré une taille supérieure à 5 alors que le schéma montre exactement 5 cases. Les cases supplémentaires existent en mémoire mais contiennent des valeurs imprévisibles — pas 0.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Réserver 6 cases dans le schéma alors qu'il n'en montre que 5. La 6ème case existe en mémoire, mais son contenu est ce que laissé là par le programme précédent — la "case fantôme".</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>calculs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="type">int</span> points[<span class="num">8</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>, <span class="num">18</span>, <span class="num">5</span>};
+<span class="comment">// Les cases [5][6][7] ont des valeurs aléatoires !</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> points[<span class="num">5</span>] = {<span class="num">10</span>, <span class="num">23</span>, <span class="num">7</span>, <span class="num">18</span>, <span class="num">5</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PROFIL 3 — Visuel·Réflexif / Intuitif
+    ════════════════════════════════════════════ -->
+    <section id="reflexif" class="profile-section">
+      <div class="profile-header">
+        <div class="profile-icon icon-reflexif">🧠</div>
+        <div class="profile-header-text">
+          <h2 style="color: #34d399;">Visuel·Réflexif (Intuitif)</h2>
+          <p>Fichier : <code>arrays-visuel-intuitif.js</code> · Variable : <code>temps[7]</code> · 2 patterns sur l'exercice 1</p>
+        </div>
+      </div>
+
+      <!-- P1 -->
+      <div class="pattern-card" id="p-ref-1">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">1</div>
+          <div class="pattern-card-title">
+            <h3>Tableau sans crochets — syntaxe int nom[n] absente</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-no-brackets">Sans crochets</span>
+              <code>eq1-no-brackets</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p>Aucun pattern <code>int nom[n]</code> n'est présent dans le code (n'importe quel nom de variable)</p>
+            </div>
+            <div class="detect-row">
+              <div class="detect-dot dot-green"></div>
+              <p>Regex : <code>!/int\s+\w+\s*\[\s*\d+\s*\]/.test(c)</code> — le tout est nié (absence = erreur)</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int temps;</span>         <span class="rx-comment">→ déclenche (aucun crochet)</span><br>
+              <span class="rx-pattern">int a = 7;</span>         <span class="rx-comment">→ déclenche (aucun tableau)</span><br>
+              <span class="rx-pattern">int temps[7] = {...}</span><span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu n'as pas encore utilisé la syntaxe <code>int tableau[n]</code>. Les crochets [] sont la clé de tout : c'est eux qui signalent au compilateur de réserver un bloc de mémoire contigu, adressable par indice.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🧠 Approche pédagogique (Réflexif)</div>
+              <p>Explique le POURQUOI conceptuel : architecture mémoire, blocs contigus, calcul d'adresse. Connexion avec les pointeurs (concept futur). Le feedback pousse l'élève à déduire lui-même.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>fondation</span>
+                <span class="step-chip"><span class="dot"></span>acces-modif</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>defi</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Aucun int nom[n] dans le code → pattern actif</span>
+<span class="type">int</span> temps;
+<span class="comment">// ou même juste une ligne vide — le pattern est actif
+// dès que int tableau[n] est absent</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> temps[<span class="num">7</span>] = {<span class="num">28</span>, <span class="num">31</span>, <span class="num">25</span>, <span class="num">33</span>, <span class="num">30</span>, <span class="num">27</span>, <span class="num">29</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div class="pattern-card" id="p-ref-2">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">2</div>
+          <div class="pattern-card-title">
+            <h3>Taille du tableau incorrecte — pas 7 cases</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-wrong">Taille ≠ 7</span>
+              <code>eq1-size-not-7</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int nom[n]</code> existe dans le code mais n ≠ 7 (peu importe le nom de variable)</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int temps[5]</span>  <span class="rx-comment">→ déclenche (5 ≠ 7)</span><br>
+              <span class="rx-pattern">int temps[10]</span> <span class="rx-comment">→ déclenche (10 ≠ 7)</span><br>
+              <span class="rx-pattern">int temps[7]</span>  <span class="rx-comment">→ ne déclenche PAS (exact)</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré un tableau avec une taille différente de 7. La taille n'est pas un détail stylistique — elle définit exactement le nombre d'octets réservés en mémoire.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🧠 Approche pédagogique (Réflexif)</div>
+              <p>Lie la taille au calcul mémoire : <code>n × 4 octets</code>. Explique les cas trop petit (données perdues) et trop grand (gaspillage + valeurs résiduelles). Demande à l'élève de déduire l'impact.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>fondation</span>
+                <span class="step-chip"><span class="dot"></span>acces-modif</span>
+                <span class="step-chip"><span class="dot"></span>boucle</span>
+                <span class="step-chip"><span class="dot"></span>defi</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Taille différente de 7 — pattern actif</span>
+<span class="type">int</span> temps[<span class="num">5</span>] = {<span class="num">28</span>, <span class="num">31</span>, <span class="num">25</span>, <span class="num">33</span>, <span class="num">30</span>};
+
+<span class="comment">// Trop grand :</span>
+<span class="type">int</span> temps[<span class="num">9</span>] = {<span class="num">28</span>, <span class="num">31</span>, <span class="num">25</span>, <span class="num">33</span>, <span class="num">30</span>, <span class="num">27</span>, <span class="num">29</span>};
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> temps[<span class="num">7</span>] = {<span class="num">28</span>, <span class="num">31</span>, <span class="num">25</span>, <span class="num">33</span>, <span class="num">30</span>, <span class="num">27</span>, <span class="num">29</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         PROFIL 4 — Visuel·Séquentiel
+    ════════════════════════════════════════════ -->
+    <section id="sequentiel" class="profile-section">
+      <div class="profile-header">
+        <div class="profile-icon icon-sequentiel">📐</div>
+        <div class="profile-header-text">
+          <h2 style="color: #fbbf24;">Visuel·Séquentiel</h2>
+          <p>Fichier : <code>arrays-visuel-sequentiel.js</code> · Variable : <code>scores[6]</code> · 3 patterns sur l'exercice 1</p>
+        </div>
+      </div>
+
+      <!-- P1 -->
+      <div class="pattern-card" id="p-seq-1">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">1</div>
+          <div class="pattern-card-title">
+            <h3>scores déclaré sans crochets de taille</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-no-brackets">Sans crochets</span>
+              <code>eq1-scores-no-brackets</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int scores</code> présent dans le code, mais sans <code>[</code> juste après</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int scores;</span>      <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int scores = 6;</span>  <span class="rx-comment">→ déclenche</span><br>
+              <span class="rx-pattern">int scores[6]</span>    <span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as écrit "int scores" comme une variable simple, sans taille entre crochets. La syntaxe correcte est : <code>int scores[6] = {...}</code>. Les crochets [6] disent au programme "réserve 6 cases". Sans eux, aucune case n'est créée.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Un tableau sans crochets, c'est comme demander un classeur sans préciser le nombre d'intercalaires. Le classeur n'a aucune section numérotée.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>recherche</span>
+                <span class="step-chip"><span class="dot"></span>parcours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-item" style="margin-bottom:16px;">
+            <div class="body-item-label">📐 Approche pédagogique (Séquentiel)</div>
+            <p style="font-size:13px;margin-bottom:8px;">Chaque étape adaptée contient un <strong>reminder</strong> qui rappelle explicitement le lien avec l'étape précédente :</p>
+            <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+              → <strong>acces</strong> : "Étape 1 → Étape 2 : tu avais écrit scores sans crochets. Les crochets [6] créent les 6 cases..."<br>
+              → <strong>modification</strong> : "Étape 1 → Étape 3 : int scores[6] crée les 6 cases que l'on va modifier..."<br>
+              → <strong>recherche</strong> : "Étape 1 → Étape 4 : la recherche du max parcourt les 6 cases créées..."<br>
+              → <strong>parcours</strong> : "Étape 1 → Étape 5 : for(int i=0; i&lt;6; i++) fait 6 tours..."
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// scores sans crochets — pattern actif</span>
+<span class="type">int</span> scores;
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> scores[<span class="num">6</span>] = {<span class="num">45</span>, <span class="num">32</span>, <span class="num">67</span>, <span class="num">28</span>, <span class="num">55</span>, <span class="num">41</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div class="pattern-card" id="p-seq-2">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">2</div>
+          <div class="pattern-card-title">
+            <h3>Taille de scores trop petite</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-small">Taille &lt; 6</span>
+              <code>eq1-scores-too-small</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int scores[n]</code> présent, avec n &lt; 6</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int scores[4]</span>  <span class="rx-comment">→ déclenche (4 &lt; 6)</span><br>
+              <span class="rx-pattern">int scores[5]</span>  <span class="rx-comment">→ déclenche (5 &lt; 6)</span><br>
+              <span class="rx-pattern">int scores[6]</span>  <span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré scores avec une taille inférieure à 6 pour stocker 6 valeurs. La taille doit correspondre exactement au nombre de valeurs. Compte les valeurs : 45, 32, 67, 28, 55, 41 → 6 valeurs → <code>int scores[6]</code>.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Réserver 5 pages dans un cahier pour 6 leçons. La 6ème leçon n'a nulle part où aller.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>recherche</span>
+                <span class="step-chip"><span class="dot"></span>parcours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Taille trop petite — pattern actif</span>
+<span class="type">int</span> scores[<span class="num">4</span>] = {<span class="num">45</span>, <span class="num">32</span>, <span class="num">67</span>, <span class="num">28</span>};
+<span class="comment">// Les valeurs 55 et 41 n'ont nulle part où aller !</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> scores[<span class="num">6</span>] = {<span class="num">45</span>, <span class="num">32</span>, <span class="num">67</span>, <span class="num">28</span>, <span class="num">55</span>, <span class="num">41</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- P3 -->
+      <div class="pattern-card" id="p-seq-3">
+        <div class="pattern-card-header" onclick="toggle(this.parentElement)">
+          <div class="pattern-number">3</div>
+          <div class="pattern-card-title">
+            <h3>Taille de scores trop grande</h3>
+            <div class="meta">
+              <span class="error-type-badge badge-size-large">Taille &gt; 6</span>
+              <code>eq1-scores-too-large</code>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="pattern-card-body">
+
+          <div class="detect-block">
+            <div class="detect-block-label">🔍 Logique de détection</div>
+            <div class="detect-row">
+              <div class="detect-dot dot-red"></div>
+              <p><code>int scores[n]</code> présent, avec n &gt; 6</p>
+            </div>
+            <div class="regex-block">
+              <span class="rx-pattern">int scores[7]</span>  <span class="rx-comment">→ déclenche (7 &gt; 6)</span><br>
+              <span class="rx-pattern">int scores[10]</span> <span class="rx-comment">→ déclenche (10 &gt; 6)</span><br>
+              <span class="rx-pattern">int scores[6]</span>  <span class="rx-comment">→ ne déclenche PAS</span>
+            </div>
+          </div>
+
+          <div class="message-box">
+            <div class="message-box-label">💬 Message affiché à l'élève</div>
+            <p>Tu as déclaré scores avec une taille supérieure à 6 pour stocker 6 valeurs. En C, les cases non initialisées ne contiennent pas 0 — elles contiennent une valeur imprévisible. La taille doit être exactement 6.</p>
+          </div>
+
+          <div class="body-grid">
+            <div class="body-item">
+              <div class="body-item-label">🎭 Analogie utilisée</div>
+              <p>Réserver 7 pages dans un cahier pour 6 leçons. La 7ème page existe, mais son contenu est imprévisible — elle n'est pas vide.</p>
+            </div>
+            <div class="body-item">
+              <div class="body-item-label">📚 Étapes adaptées déclenchées</div>
+              <div class="steps-chips" style="margin-top:4px;">
+                <span class="step-chip"><span class="dot"></span>acces</span>
+                <span class="step-chip"><span class="dot"></span>modification</span>
+                <span class="step-chip"><span class="dot"></span>recherche</span>
+                <span class="step-chip"><span class="dot"></span>parcours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="test-block">
+            <div class="test-block-header">
+              <span>✅ Code à taper pour déclencher ce pattern</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+            </div>
+            <pre><span class="comment">// Taille trop grande — pattern actif</span>
+<span class="type">int</span> scores[<span class="num">9</span>] = {<span class="num">45</span>, <span class="num">32</span>, <span class="num">67</span>, <span class="num">28</span>, <span class="num">55</span>, <span class="num">41</span>};
+<span class="comment">// Cases [6][7][8] ont des valeurs imprévisibles</span>
+
+<span class="comment">// Correction :</span>
+<span class="type">int</span> scores[<span class="num">6</span>] = {<span class="num">45</span>, <span class="num">32</span>, <span class="num">67</span>, <span class="num">28</span>, <span class="num">55</span>, <span class="num">41</span>};</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <hr />
+    <p style="color: var(--text-dim); font-size: 12px; padding-bottom: 40px; text-align:center;">
+      AdaptativeCBot — Documentation interne · Généré le 2026-05-14 · 12 patterns · 4 profils
+    </p>
+
+  </main>
+</div>
+
+<script>
+  function toggle(card) {
+    card.classList.toggle('open')
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.test-block').querySelector('pre')
+    const text = pre.innerText
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copié ✓'
+      btn.style.color = '#34d399'
+      setTimeout(() => {
+        btn.textContent = 'Copier'
+        btn.style.color = ''
+      }, 2000)
+    })
+  }
+
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id]')
+  const links = document.querySelectorAll('.sidebar-link[href^="#"]')
+  window.addEventListener('scroll', () => {
+    let current = ''
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id
+    })
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current)
+    })
+  }, { passive: true })
+</script>
+</body>
+</html>
