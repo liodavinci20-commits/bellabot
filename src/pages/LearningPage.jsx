@@ -593,7 +593,12 @@ export default function LearningPage() {
             {/* Contenu éditeur */}
             <div className="flex-1 overflow-y-auto p-5">
               {step.exercise
-                ? <PracticeEditor exercise={step.exercise} onFirstPass={markPracticed} onErrorAdaptation={handleErrorAdaptation} />
+                ? <PracticeEditor
+                    exercise={step.exercise}
+                    onFirstPass={markPracticed}
+                    onErrorAdaptation={handleErrorAdaptation}
+                    onComplete={() => { setShowEditor(false); goNext() }}
+                  />
                 : (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-white/25 text-sm">Pas d'exercice pour cette étape.</p>

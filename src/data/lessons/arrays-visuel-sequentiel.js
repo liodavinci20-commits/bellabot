@@ -491,20 +491,22 @@ int main() {
 
 int main() {
     int temp[7] = {28, 31, 25, 33, 30, 27, 29};
-    //             [0] [1] [2] [3] [4] [5] [6]
+    //  indice :   [0] [1] [2] [3] [4] [5] [6]
+    //  rang   :    1   2   3   4   5   6   7
+    //  règle  : indice = rang - 1
 
-    // 1. Affiche le 1er jour (indice 0) → 28
-    printf("Jour 1 : %d\\n", temp[0]);
+    // 1. 1er jour = rang 1 → indice 0
+    printf("Jour 1 : %d\\n", temp[0]);   // → 28 ✓
 
-    // 2. Affiche le 3ème jour (indice 2) → 25
-    printf("Jour 3 : %d\\n", temp[2]);
+    // 2. 3ème jour = rang 3 → indice 2
+    printf("Jour 3 : %d\\n", temp[2]);   // → 25 ✓
 
-    // 3. Affiche le dernier jour (indice 6) → 29
-    printf("Dernier : %d\\n", temp[6]);
+    // 3. Dernier jour = rang 7 → indice 6 (= taille 7 - 1)
+    printf("Dernier : %d\\n", temp[6]);  // → 29 ✓
 
-    // 4. Stocke temp[3] dans une variable "jour4" et affiche-la
-    int jour4 = temp[3];
-    printf("Jour 4 : %d\\n", jour4);
+    // 4. case [3] → on la stocke puis on l'affiche
+    int jour4 = temp[3];                 // jour4 = 33
+    printf("Jour 4 : %d\\n", jour4);    // → 33 ✓
 
     return 0;
 }`,

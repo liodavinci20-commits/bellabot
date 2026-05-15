@@ -10,6 +10,7 @@ import {
   HiOutlineClipboardCopy,
   HiOutlineCheck,
   HiOutlineExclamation,
+  HiArrowRight,
 } from 'react-icons/hi'
 import CodeBlock from './CodeBlock'
 
@@ -91,7 +92,7 @@ function DiagnosticPanel({ detectedError }) {
 }
 
 /* ─── Éditeur de pratique principal ─── */
-export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptation }) {
+export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptation, onComplete }) {
   const [code, setCode]             = useState(exercise.starter ?? '')
   const [results, setResults]       = useState(null)   // null | check[]
   const [validated, setValidated]   = useState(false)
@@ -342,15 +343,28 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
 
         {/* ── Message de succès total ── */}
         {allGood && (
-          <div className="flex items-center gap-3 px-4 py-4 rounded-xl
+          <div className="flex items-center justify-between gap-3 px-4 py-4 rounded-xl
             bg-emerald-500/10 border border-emerald-500/30">
-            <HiOutlineCheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
-            <div>
-              <p className="text-sm font-bold text-emerald-400">Excellent ! Tous les critères sont validés.</p>
-              <p className="text-xs text-emerald-400/60 mt-0.5">
-                {attempts === 1 ? 'Du premier coup !' : `Validé en ${attempts} essai${attempts > 1 ? 's' : ''}.`}
-              </p>
+            <div className="flex items-center gap-3">
+              <HiOutlineCheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-emerald-400">Excellent ! Tous les critères sont validés.</p>
+                <p className="text-xs text-emerald-400/60 mt-0.5">
+                  {attempts === 1 ? 'Du premier coup !' : `Validé en ${attempts} essai${attempts > 1 ? 's' : ''}.`}
+                </p>
+              </div>
             </div>
+            {onComplete && (
+              <button
+                onClick={onComplete}
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
+                  bg-emerald-500/20 border border-emerald-500/40 text-emerald-300
+                  hover:bg-emerald-500/30 transition-all whitespace-nowrap"
+              >
+                Étape suivante
+                <HiArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         )}
 
