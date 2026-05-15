@@ -11,6 +11,12 @@ function normalize(str) {
     .trim()
 }
 
+// Stemming fran\u00e7ais basique : r\u00e9duit un mot \u00e0 sa racine
+function stem(word) {
+  if (word.length <= 3) return word
+  return word.replace(/x$/, '').replace(/s$/, '')
+}
+
 // Noms lisibles des sections pour le préfixe contextuel
 const SECTION_LABELS = {
   declaration: 'déclaration de tableau',
@@ -21,30 +27,42 @@ const SECTION_LABELS = {
 }
 
 // Trouve la meilleure réponse dans la KB
-// currentSection booste les entrées appartenant à la section active
+// Retourne { entry, uncertain } ou null
 function findBestMatch(input, currentSection) {
   const normalized = normalize(input)
-  const words = normalized.split(/\s+/)
+  const words = normalized.split(/\s+/).filter(w => w.length > 2)
+  const stemmedWords = words.map(stem)
 
   let bestMatch = null
   let bestScore = 0
 
   for (const entry of CHATBOT_KB) {
     let score = 0
+
+    // 1. Mots-clés (avec stemming)
     for (const keyword of entry.keywords) {
       const normKw = normalize(keyword)
-      if (normKw.length === 0) continue  // & %d %f etc. → chaîne vide → on ignore
-      // Correspondance exacte de phrase
-      if (normalized.includes(normKw)) score += 3
-      // Correspondance par mot individuel
-      else {
-        const kwWords = normKw.split(/\s+/)
-        for (const word of words) {
-          if (kwWords.includes(word) && word.length > 2) score += 1
+      if (normKw.length === 0) continue
+      if (normalized.includes(normKw)) {
+        score += 3
+      } else {
+        const kwStems = normKw.split(/\s+/).map(stem)
+        for (const sw of stemmedWords) {
+          if (kwStems.includes(sw)) score += 1
         }
       }
     }
-    // Bonus si l'entrée appartient à la section où se trouve l'élève
+
+    // 2. Recherche dans le texte de la question de l'entrée
+    const normQ = normalize(entry.question || '')
+    if (normQ) {
+      const qStems = normQ.split(/\s+/).map(stem)
+      for (const sw of stemmedWords) {
+        if (qStems.includes(sw)) score += 0.5
+      }
+    }
+
+    // 3. Bonus de section
     if (currentSection && entry.section === currentSection) score += 2
 
     if (score > bestScore) {
@@ -53,7 +71,9 @@ function findBestMatch(input, currentSection) {
     }
   }
 
-  return bestScore >= 1 ? bestMatch : null
+  if (bestScore >= 3) return { entry: bestMatch, uncertain: false }
+  if (bestScore >= 1) return { entry: bestMatch, uncertain: true }
+  return null
 }
 
 const BELLA_INTRO = {
@@ -85,12 +105,15 @@ export function useChatBot({ currentSection } = {}) {
     // Simuler le temps de réponse de Bella
     await new Promise((r) => setTimeout(r, 700 + Math.random() * 400))
 
-    const match = findBestMatch(userText, currentSection)
+    const result = findBestMatch(userText, currentSection)
+    const match = result?.entry ?? null
+    const uncertain = result?.uncertain ?? false
 
-    // Préfixe contextuel si la question correspond à la section active
-    const isContextual = match && match.section && match.section === currentSection
+    const isContextual = match && !uncertain && match.section === currentSection
     const contextPrefix = isContextual
       ? `Je vois que tu es dans la section **${SECTION_LABELS[currentSection]}** — et c'est une bonne question ! Voici :`
+      : uncertain && match
+      ? `Je pense que tu parles de : **${match.question}**`
       : null
 
     const botMsg = {
