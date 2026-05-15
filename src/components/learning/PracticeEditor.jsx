@@ -104,19 +104,36 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
   const [shownErrorIds, setShownErrorIds]   = useState(new Set())
   const textareaRef = useRef(null)
 
-  const hints    = exercise.hints   ?? []
+  const hints    = exercise.hints      ?? []
   const checks   = exercise.validation ?? []
+  const testFn   = exercise.test       ?? null   // fallback si pas de validation[]
   const isCode   = exercise.type === 'code'
   const hasHints = hints.length > 0
 
   /* ── Validation ── */
   const validate = () => {
     const errorPatterns = exercise.errorPatterns ?? []
-    const newResults = checks.map((check) => ({
-      ...check,
-      passed: check.test(code),
-    }))
-    const allPassed = newResults.every((r) => r.passed)
+
+    // Mode validation[] — checks individuels avec messages
+    // Mode test() — un seul booléen global (fallback)
+    let newResults
+    if (checks.length > 0) {
+      newResults = checks.map((check) => ({ ...check, passed: check.test(code) }))
+    } else if (testFn) {
+      const passed = (() => { try { return testFn(code) } catch { return false } })()
+      newResults = [{
+        id: 'global',
+        passed,
+        success: 'Réponses correctes — bien joué !',
+        error: code.includes('___')
+          ? 'Remplace tous les ___ par tes réponses avant de valider.'
+          : 'Pas encore correct — relis l\'énoncé et les indices.',
+      }]
+    } else {
+      newResults = []
+    }
+
+    const allPassed = newResults.length > 0 && newResults.every((r) => r.passed)
     const passedNow = newResults.filter((r) => r.passed).length
     setResults(newResults)
     setValidated(true)
@@ -337,12 +354,19 @@ export default function PracticeEditor({ exercise, onFirstPass, onErrorAdaptatio
           </div>
         )}
 
+        {/* ── Indication ___ restants ── */}
+        {code.includes('___') && (
+          <p className="text-xs text-amber-400/70 text-center py-1">
+            Remplace tous les <span className="font-mono bg-amber-500/10 px-1 rounded">___</span> par tes réponses pour pouvoir valider.
+          </p>
+        )}
+
         {/* ── Actions ── */}
         <div className="flex flex-wrap gap-2 pt-1">
           {/* Valider */}
           <button
             onClick={validate}
-            disabled={!code.trim()}
+            disabled={!code.trim() || code.includes('___')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
               bg-gradient-to-r from-blue-600 to-indigo-600 text-white
               hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.01]
